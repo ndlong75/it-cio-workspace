@@ -1,0 +1,129 @@
+# IT CIO Workspace — People & Channel Directory
+# File: config/people.yaml
+# ⚠️  ĐIỀN THÔNG TIN THỰC VÀO ĐÂY — Claude đọc file này
+#     để biết gửi notification cho ai, qua kênh nào
+
+team:
+  cio:
+    name: "[Tên IT Head]"
+    email: "ithead@company.com"
+    teams_id: "@ithead"
+    notify_for: [p1, p2, board_report, budget, compliance, data_breach, cab_decision]
+
+  dev_lead:
+    name: "[Tên Dev Lead]"
+    email: "devlead@company.com"
+    teams_id: "@devlead"
+    notify_for: [sprint_risk, quality_block, deploy_failure, tech_debt]
+
+  pm:
+    name: "[Tên PM]"
+    email: "pm@company.com"
+    teams_id: "@pm"
+    notify_for: [milestone_risk, resource_conflict, sprint_at_risk]
+
+  infra_lead:
+    name: "[Tên Infra Lead]"
+    email: "infra@company.com"
+    teams_id: "@infra"
+    notify_for: [p1_infra, capacity_alert, backup_failure, patch_required]
+
+  security_lead:
+    name: "[Tên Security Lead]"
+    email: "security@company.com"
+    teams_id: "@security"
+    notify_for: [p1_security, cve_critical, access_anomaly, compliance_finding]
+
+  snow_lead:
+    name: "[Tên Snow Lead]"
+    email: "itsm@company.com"
+    teams_id: "@itsm"
+    notify_for: [sla_breach, queue_overload, cab_pending, problem_overdue]
+
+  on_call:
+    - name: "[Tên 1]"
+      phone: "+84xxxxxxxxx"
+      email: "oncall1@company.com"
+    - name: "[Tên 2]"
+      phone: "+84xxxxxxxxx"
+      email: "oncall2@company.com"
+
+board:
+  ceo:
+    name: "[Tên CEO]"
+    email: "ceo@company.com"
+    notify_for: [p1_prolonged, data_breach, board_report]
+  cfo:
+    name: "[Tên CFO]"
+    email: "cfo@company.com"
+    notify_for: [budget_overrun, major_investment]
+
+external:
+  legal:
+    email: "legal@company.com"
+    notify_for: [data_breach, compliance_critical]
+  hr:
+    email: "hr@company.com"
+    notify_for: [access_review, phishing_high_rate]
+
+channels:
+  it_leadership:   "teams://it-leadership"   # CIO daily briefing + escalations
+  it_itsm:         "teams://it-itsm"         # Snow Agent triage
+  it_infra:        "teams://it-infra"        # Infra health + incidents
+  it_security:     "teams://it-security"     # Security alerts
+  dev_team:        "teams://dev-team"        # Dev standup + releases
+  it_projects:     "teams://it-projects"     # PM milestone updates
+  incident_bridge: "teams://incident-bridge" # P1/P2 war room (all hands)
+
+# ─── NOTIFICATION RULES ───────────────────────────────────
+# delay_min: -120 = cảnh báo 2h TRƯỚC khi xảy ra
+# delay_min: 0    = ngay lập tức
+# delay_min: 30   = sau 30 phút nếu chưa resolve
+
+notification_rules:
+
+  p1:                              # P1 incident mới
+    channels: [incident_bridge]
+    emails:   [cio, on_call]
+    sms:      [on_call]
+    delay_min: 0
+
+  p1_prolonged:                    # P1 chưa resolve sau 30 phút
+    channels: [incident_bridge]
+    emails:   [cio, ceo]
+    sms:      [cio]
+    delay_min: 30
+
+  p2:
+    channels: [it_infra, it_security]
+    emails:   [cio]
+    delay_min: 0
+
+  sprint_risk:
+    channels: [dev_team]
+    emails:   [pm, cio]
+    delay_min: 60
+
+  sla_breach_warning:              # 2h trước khi SLA breach
+    channels: [it_itsm]
+    delay_min: -120
+
+  data_breach:
+    channels: [incident_bridge]
+    emails:   [cio, ceo, legal]
+    sms:      [cio]
+    delay_min: 0
+    note: "Regulatory report required within 72h (Nghị định 13)"
+
+  board_report_ready:
+    emails:   [cio]
+    note: "CIO must review before sending to Board"
+
+  budget_request:
+    emails:   [cio]
+    note: "Requires CIO approval — do not procure without sign-off"
+
+  phishing_rate_high:
+    emails:   [cio, hr]
+    channels: [it_security]
+    note: "Trigger when department click rate > 20%"
