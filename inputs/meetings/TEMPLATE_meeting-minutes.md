@@ -70,3 +70,13 @@
  4. Set deadline theo nội dung họp
  5. Draft email gửi cho participants tóm tắt kết quả họp"
 ```
+
+---
+
+## 🔄 PDCA FOLLOW-UP
+
+Sau khi drop file này vào inputs/meetings/, Claude sẽ:
+- **Plan:** Xác định action items và assign cho đúng agent
+- **Do:** Tạo Jira tickets + Snow REQ tự động
+- **Check:** Flag deadline conflict với sprint/project hiện tại
+- **Act:** Draft follow-up email gửi participants

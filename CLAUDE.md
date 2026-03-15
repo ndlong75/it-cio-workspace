@@ -13,7 +13,7 @@ Claude hoạt động như **hệ thống multi-agent IT** với 6 agents, mỗi
 ## 🤖 AGENTS — ĐỌC FILE TƯƠNG ỨNG
 
 | Lệnh | Agent | File |
-|------|-------|------|
+| --- | --- | --- |
 | `/cio` hoặc mặc định | CIO / IT Dept Head | `agents/cio_agent.md` |
 | `/dev` | IT Development Lead | `agents/dev_agent.md` |
 | `/pm` | IT Project Manager | `agents/pm_agent.md` |
@@ -29,7 +29,7 @@ Claude hoạt động như **hệ thống multi-agent IT** với 6 agents, mỗi
 ## 📋 WORKFLOWS — CHẠY THEO LỆNH
 
 | Lệnh | Workflow | File |
-|------|----------|------|
+| --- | --- | --- |
 | `/daily` | Daily IT Briefing (8AM) | `workflows/daily_briefing.md` |
 | `/weekly` | Weekly IT Scorecard (Thứ 2) | `workflows/weekly_scorecard.md` |
 | `/incident [mô tả]` | Incident Response | `workflows/incident_response.md` |
@@ -68,12 +68,28 @@ Chi tiết: xem `inputs/README.md`
 ## 🛠️ SKILLS — CÔNG CỤ BIẾT DÙNG
 
 | Skill | Dùng khi | File |
-|-------|----------|------|
+| --- | --- | --- |
 | Đọc Jira | Có Jira data hoặc cần kéo tickets | `skills/read_jira.md` |
 | Đọc GitHub | Cần xem PR, commits, CI/CD | `skills/read_github.md` |
 | Phân tích incident | Có sự cố cần root cause | `skills/analyze_incident.md` |
 | Viết báo cáo BGĐ | Cần tạo executive report | `skills/write_report.md` |
 | Đánh giá rủi ro | Cần assess risk IT | `skills/risk_assessment.md` |
+
+---
+
+## 👥 PEOPLE DIRECTORY — Ai nhận notification gì
+
+```
+File: config/people.yaml  ← ĐIỀN VÀO ĐÂY TRƯỚC KHI DÙNG
+```
+
+Mỗi agent đọc `config/people.yaml` để biết:
+- Ai là CIO, PM, Dev Lead, Infra, Security, Snow Lead
+- Email + Teams ID của từng người
+- Kênh Teams nào dùng cho loại alert nào
+- Rule: P1 → notify ai, sprint risk → notify ai, data breach → notify ai
+
+**Không điền file này = agent không biết gửi notification cho ai.**
 
 ---
 
@@ -139,6 +155,9 @@ Luôn dùng format sau cho mọi báo cáo:
 it-cio-workspace/
 ├── CLAUDE.md              ← File này (entry point)
 ├── .env                   ← API keys (gitignore)
+├── config/
+│   └── people.yaml        ← ⚠️ ĐIỀN EMAIL/TEAMS CỦA TEAM VÀO ĐÂY
+├── output/                ← Tất cả HTML diagrams (10 files)
 ├── agents/
 │   ├── cio_agent.md
 │   ├── dev_agent.md

@@ -83,3 +83,14 @@ python scripts/get_jira_data.py       > /tmp/jira_today.json
 python scripts/get_github_data.py     > /tmp/github_today.json
 python scripts/get_core_system_status.py > /tmp/core_status.json
 ```
+
+---
+
+## OUTPUT — Output Channels
+
+```
+📤 Teams #it-leadership   — Full briefing report
+📤 Teams #cio-only        — Sensitive items (if any)
+📤 daily_log/YYYY-MM-DD.md — Persistent log entry
+📤 Email → BGĐ            — Only if 🔴 Critical items present
+```
