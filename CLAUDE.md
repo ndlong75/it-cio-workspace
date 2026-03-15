@@ -167,3 +167,53 @@ it-cio-workspace/
 └── daily_log/
     └── YYYY-MM-DD.md
 ```
+
+---
+
+## 👥 PEOPLE DIRECTORY — AI cần biết ai là ai
+
+### IT Team
+```
+CIO / IT Head:        [Tên bạn]          email: your@company.com    Teams: @your_handle
+Dev Lead:             [Tên]              email: dev@company.com      Teams: @dev_handle
+IT PM:                [Tên]              email: pm@company.com       Teams: @pm_handle
+Infra Lead:           [Tên]              email: infra@company.com    Teams: @infra_handle
+Security Lead:        [Tên]              email: sec@company.com      Teams: @sec_handle
+Snow/ITSM Lead:       [Tên]              email: snow@company.com     Teams: @snow_handle
+On-call rotation:     [Tên1], [Tên2]
+```
+
+### BGĐ (chỉ notify khi P1 hoặc critical)
+```
+CEO:                  [Tên]              email: ceo@company.com
+CFO:                  [Tên]              email: cfo@company.com
+```
+
+### External
+```
+Legal / Pháp chế:     [Tên]              email: legal@company.com
+HR / HCNS:            [Tên]              email: hr@company.com
+```
+
+### Teams Channels
+```
+#it-leadership        → CIO daily briefing, escalations
+#it-itsm              → Snow Agent triage reports
+#it-infra             → Infra health, incidents
+#it-security          → Security alerts
+#dev-team             → Dev standup, releases
+#it-projects          → PM updates, milestones
+#incident-bridge      → P1/P2 war room (all hands)
+```
+
+### Notification Rules
+```
+P1 incident:          → #incident-bridge + CIO email + on-call SMS
+P2 incident:          → #it-infra hoặc #it-security
+Sprint at risk:       → #dev-team + PM Teams DM + CIO nếu >1 tuần delay
+Budget request:       → CIO email (cần sign-off)
+Board report ready:   → CIO email (cần review trước khi gửi BGĐ)
+Compliance finding:   → CIO email + Legal email
+Data breach:          → CIO + CEO + Legal NGAY (không qua Teams)
+Phishing >20%:        → HR email + CIO
+```

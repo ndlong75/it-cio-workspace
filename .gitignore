@@ -1,7 +1,28 @@
+# Secrets
 .env
+
+# Python
 *.pyc
 __pycache__/
+
+# OS
 .DS_Store
-*.log
+Thumbs.db
+
+# Generated runtime files
 daily_log/
 archive/
+
+# Input folders content (keep structure only)
+inputs/emails/*
+inputs/notes/*
+inputs/pdfs/*
+inputs/reports/*
+inputs/decisions/*
+!inputs/emails/.gitkeep
+!inputs/notes/.gitkeep
+!inputs/pdfs/.gitkeep
+!inputs/reports/.gitkeep
+!inputs/decisions/.gitkeep
+!inputs/meetings/TEMPLATE_meeting-minutes.md
+!inputs/README.md
