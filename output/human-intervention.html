@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Human Intervention Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+:root{
+  --bg:#0f1a28;--bg2:#172438;--bg3:#1e2f48;
+  --border:rgba(255,255,255,0.1);
+  --text:#e8f0fa;--muted:#7a96b4;--faint:#3d5a7a;
+  --human:#fbbf24;--human2:#f59e0b;
+  --auto:#22c55e;--tele:#f59e0b;--deep:#60a5fa;
+  --cio:#60a5fa;--dev:#a78bfa;--pm:#34d399;
+  --infra:#fb923c;--sec:#f43f5e;--snow:#6ee7b7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
+.page{max-width:1060px;margin:0 auto;padding:36px 24px 80px}
+
+/* HEADER */
+.hdr{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.eye{font-size:9px;letter-spacing:5px;color:var(--human);margin-bottom:8px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,27px);font-weight:800;color:#fff;letter-spacing:-.5px}
+h1 span{color:var(--human)}
+.hsub{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* RATIO BAR */
+.ratio-wrap{margin-bottom:36px}
+.sec-label{font-size:9px;letter-spacing:4px;color:var(--faint);margin-bottom:14px;
+  display:flex;align-items:center;gap:12px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.ratio-bar{height:40px;border-radius:8px;overflow:hidden;display:flex;margin-bottom:12px;
+  border:1px solid rgba(255,255,255,0.08)}
+.ratio-seg{display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;letter-spacing:.5px;transition:flex .4s}
+.ratio-legend{display:flex;gap:20px;font-size:10px;flex-wrap:wrap}
+.rl{display:flex;align-items:center;gap:7px}
+.rl-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* PRINCIPLE CARDS */
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:36px}
+.pcard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.pcard-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+  line-height:1;margin-bottom:6px}
+.pcard-title{font-size:11px;font-weight:600;color:#fff;margin-bottom:4px}
+.pcard-desc{font-size:10px;color:var(--muted);line-height:1.5}
+
+/* HUMAN ROLES */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:36px}
+.role-card{background:var(--bg2);border:1px solid;border-radius:10px;padding:16px}
+.role-icon{font-size:24px;margin-bottom:8px}
+.role-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.role-title{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:10px}
+.role-actions{display:flex;flex-direction:column;gap:4px}
+.ra{font-size:10px;color:var(--text);display:flex;gap:7px;align-items:flex-start;line-height:1.5}
+.ra-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* FLOW DIAGRAM */
+.flow-wrap{margin-bottom:36px;overflow-x:auto}
+.flow-svg-wrap{min-width:700px}
+
+/* DECISION TABLE */
+.dt-wrap{margin-bottom:36px}
+.dt{width:100%;border-collapse:collapse;font-size:11px}
+.dt th{font-size:9px;letter-spacing:2px;color:var(--faint);padding:8px 12px;
+  text-align:left;border-bottom:1px solid var(--border)}
+.dt td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:top;line-height:1.5}
+.dt tr:hover td{background:rgba(255,255,255,0.02)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:9px;
+  padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+.h-pill{color:var(--human);border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.1)}
+.a-pill{color:var(--auto);border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.1)}
+.time-badge{font-size:9px;color:var(--muted);white-space:nowrap}
+
+/* TIMELINE */
+.htl{display:flex;flex-direction:column;gap:0}
+.htl-row{display:grid;grid-template-columns:80px 24px 1fr;gap:8px;align-items:stretch;margin-bottom:2px}
+.htl-time{font-size:11px;color:#fff;font-weight:600;text-align:right;padding-top:12px;line-height:1.3}
+.htl-line-col{display:flex;flex-direction:column;align-items:center;padding-top:0}
+.htl-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0;margin-top:12px;z-index:1}
+.htl-vline{width:2px;flex:1;margin-top:2px}
+.htl-content{padding:8px 0 8px 0}
+.htl-card{border-radius:8px;padding:12px 14px;border:1px solid}
+.htl-who{font-size:9px;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.htl-action{font-size:11px;color:var(--text);line-height:1.6;margin-bottom:6px}
+.htl-how{font-size:10px;color:var(--muted);line-height:1.5}
+.htl-type{display:inline-flex;align-items:center;gap:4px;font-size:8px;
+  letter-spacing:.5px;padding:2px 7px;border-radius:3px;border:1px solid;margin-top:6px;font-weight:600}
+
+/* ALERT BOX */
+.alert-box{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);
+  border-radius:10px;padding:16px 20px;margin-bottom:28px;font-size:11px;line-height:1.7}
+.alert-box b{color:var(--human)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="eye">IT CIO WORKSPACE — HUMAN INTERVENTION MAP</div>
+  <h1>Con người <span>can thiệp</span> khi nào & như thế nào</h1>
+  <div class="hsub">Phân biệt rõ: Claude tự làm gì · Con người quyết định gì · Tại sao không thể để AI tự xử lý</div>
+</div>
+
+<!-- RATIO -->
+<div class="ratio-wrap">
+  <div class="sec-label">TỶ LỆ TỰ ĐỘNG VS CON NGƯỜI</div>
+  <div class="ratio-bar">
+    <div class="ratio-seg" style="flex:75;background:rgba(34,197,94,0.25);color:#22c55e;border-right:1px solid rgba(255,255,255,0.1)">75% Claude tự làm</div>
+    <div class="ratio-seg" style="flex:15;background:rgba(251,191,36,0.25);color:#fbbf24;border-right:1px solid rgba(255,255,255,0.1)">15% Bạn duyệt</div>
+    <div class="ratio-seg" style="flex:10;background:rgba(244,63,94,0.25);color:#f43f5e">10% Bạn quyết định</div>
+  </div>
+  <div class="ratio-legend">
+    <div class="rl"><div class="rl-dot" style="background:rgba(34,197,94,0.6)"></div><span style="color:#22c55e">Claude tự chạy</span> — collect, analyze, draft, route, archive</div>
+    <div class="rl"><div class="rl-dot" style="background:rgba(251,191,36,0.6)"></div><span style="color:#fbbf24">Bạn đọc & duyệt</span> — xem briefing, confirm recommendations, sign-off</div>
+    <div class="rl"><div class="rl-dot" style="background:rgba(244,63,94,0.6)"></div><span style="color:#f43f5e">Bạn quyết định</span> — approve budget, authorize P1 response, regulatory action</div>
+  </div>
+</div>
+
+<!-- ALERT -->
+<div class="alert-box">
+  💡 <b>Nguyên tắc cốt lõi:</b> Claude xử lý thông tin và đưa ra đề xuất — <b>con người là người duy nhất có quyền commit resources, authorize exceptions, và chịu trách nhiệm pháp lý.</b>
+  Mọi action ảnh hưởng production, budget, hoặc compliance đều cần human sign-off trước khi execute.
+</div>
+
+<!-- PRINCIPLES -->
+<div class="sec-label">5 NGUYÊN TẮC KHI NÀO CẦN CON NGƯỜI</div>
+<div class="principles">
+  <div class="pcard" style="border-color:rgba(251,191,36,0.3)">
+    <div class="pcard-num" style="color:var(--human)">01</div>
+    <div class="pcard-title">Production Changes</div>
+    <div class="pcard-desc">Bất kỳ thay đổi nào trên production system — Claude phân tích và recommend, người duyệt và authorize</div>
+  </div>
+  <div class="pcard" style="border-color:rgba(251,191,36,0.3)">
+    <div class="pcard-num" style="color:var(--human)">02</div>
+    <div class="pcard-title">Budget Commitment</div>
+    <div class="pcard-desc">Chi tiêu vượt threshold — hardware, cloud, contractor, vendor. Claude estimate, người approve</div>
+  </div>
+  <div class="pcard" style="border-color:rgba(251,191,36,0.3)">
+    <div class="pcard-num" style="color:var(--human)">03</div>
+    <div class="pcard-title">Legal & Regulatory</div>
+    <div class="pcard-desc">Data breach report, regulatory submission, contract signing. Claude draft, Legal + CIO sign</div>
+  </div>
+  <div class="pcard" style="border-color:rgba(251,191,36,0.3)">
+    <div class="pcard-num" style="color:var(--human)">04</div>
+    <div class="pcard-title">Conflict & Ambiguity</div>
+    <div class="pcard-desc">Khi priorities mâu thuẫn, khi data không đủ để recommend, khi risk quá cao để AI tự xử lý</div>
+  </div>
+  <div class="pcard" style="border-color:rgba(251,191,36,0.3)">
+    <div class="pcard-num" style="color:var(--human)">05</div>
+    <div class="pcard-title">People Decisions</div>
+    <div class="pcard-desc">Khen thưởng, kỷ luật, hiring, firing, performance review. Claude không bao giờ quyết định về người</div>
+  </div>
+</div>
+
+<!-- HUMAN ROLES -->
+<div class="sec-label">AI LÀ CON NGƯỜI TRONG HỆ THỐNG NÀY</div>
+<div class="roles-grid">
+
+  <div class="role-card" style="border-color:rgba(251,191,36,0.3)">
+    <div class="role-icon">👤</div>
+    <div class="role-name">IT Dept Head (Bạn)</div>
+    <div class="role-title">PRIMARY HUMAN — ~30 MIN/DAY</div>
+    <div class="role-actions">
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Đọc Daily Briefing 8:00 → xác nhận hoặc override CIO to-do</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Approve / Reject CAB change requests</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Quyết định khi có escalation từ P1</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Sign off Monthly Board Report trước khi gửi BGĐ</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Drop files vào inputs/ khi cần (PDF, meeting notes)</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--human)"></div>Approve budget requests từ Infra/PM</div>
+    </div>
+  </div>
+
+  <div class="role-card" style="border-color:rgba(96,165,250,0.3)">
+    <div class="role-icon">👥</div>
+    <div class="role-name">IT Team Members</div>
+    <div class="role-title">EXECUTION HUMANS — AS NEEDED</div>
+    <div class="role-actions">
+      <div class="ra"><div class="ra-dot" style="background:var(--cio)"></div>Execute fixes khi Infra Agent tìm ra root cause</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--cio)"></div>Code review và PR approval (Dev Agent chỉ flag)</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--cio)"></div>Physical access: data center, hardware replacement</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--cio)"></div>Vendor phone calls, negotiations</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--cio)"></div>User training, onboarding sessions</div>
+    </div>
+  </div>
+
+  <div class="role-card" style="border-color:rgba(244,63,94,0.3)">
+    <div class="role-icon">⚖️</div>
+    <div class="role-name">CEO / BGĐ</div>
+    <div class="role-title">STRATEGIC HUMANS — EXCEPTIONS ONLY</div>
+    <div class="role-actions">
+      <div class="ra"><div class="ra-dot" style="background:var(--sec)"></div>Đọc Monthly Board Report (Claude đã chuẩn bị)</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--sec)"></div>Approve major IT investments</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--sec)"></div>Sign data breach regulatory reports</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--sec)"></div>Quyết định khi có crisis P1 ảnh hưởng business</div>
+    </div>
+  </div>
+
+  <div class="role-card" style="border-color:rgba(52,211,153,0.3)">
+    <div class="role-icon">🏢</div>
+    <div class="role-name">Phòng Ban (Stakeholders)</div>
+    <div class="role-title">REQUESTORS — TRIGGERED BY NEED</div>
+    <div class="role-actions">
+      <div class="ra"><div class="ra-dot" style="background:var(--pm)"></div>Gửi yêu cầu IT qua email/Teams → vào inputs/emails/</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--pm)"></div>Đọc Weekly Stakeholder Update từ PM Agent</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--pm)"></div>Accept/reject deliverables cuối dự án</div>
+      <div class="ra"><div class="ra-dot" style="background:var(--pm)"></div>Provide UAT feedback</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DECISION TABLE -->
+<div class="dt-wrap">
+  <div class="sec-label">BẢNG PHÂN QUYỀN — AI LÀM GÌ / NGƯỜI LÀM GÌ</div>
+  <table class="dt">
+    <thead>
+      <tr>
+        <th>TÌNH HUỐNG</th>
+        <th>CLAUDE TỰ LÀM</th>
+        <th>NGƯỜI CẦN LÀM</th>
+        <th>TẠI SAO CẦN NGƯỜI</th>
+        <th style="white-space:nowrap">THỜI GIAN</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Daily IT Briefing</b><br>Báo cáo sáng hằng ngày</td>
+        <td style="color:#22c55e">Collect data từ 5 agents, analyze, tạo top-5 action list, gửi Teams</td>
+        <td style="color:var(--human)"><b>Đọc briefing</b> — xác nhận hoặc re-prioritize action list nếu cần</td>
+        <td style="color:var(--muted)">Context business ngoài IT chỉ CIO biết (CEO meeting, board expectations)</td>
+        <td><span class="time-badge">⏰ 5 phút, 8:00 AM</span></td>
+      </tr>
+      <tr>
+        <td><b>CAB Change Request</b><br>Production change</td>
+        <td style="color:#22c55e">Đọc CHG, check CMDB, INC history, GitHub, Jira, tạo recommendation + risk score</td>
+        <td style="color:var(--human)"><b>APPROVE / REJECT</b> — đọc recommendation của Snow Agent và quyết định</td>
+        <td style="color:var(--muted)">Accountable chỉ là người, không phải AI. Nếu có sự cố, CIO chịu trách nhiệm</td>
+        <td><span class="time-badge">⏰ 5-10 phút</span></td>
+      </tr>
+      <tr>
+        <td><b>P1 Incident</b><br>System down</td>
+        <td style="color:#22c55e">Classify, route, search KB, auto-update work notes, notify team, suggest fix</td>
+        <td style="color:var(--human)">Nếu >30 phút: <b>authorize emergency actions</b> — DR activation, vendor escalation, budget override</td>
+        <td style="color:var(--muted)">Emergency vendor contracts, DR decision có financial/legal implications</td>
+        <td><span class="time-badge">⚡ Khi P1 >30'</span></td>
+      </tr>
+      <tr>
+        <td><b>Data Breach Security</b><br>Customer data exposed</td>
+        <td style="color:#22c55e">Contain, investigate, draft regulatory report (Nghị định 13), draft customer notification</td>
+        <td style="color:var(--human)"><b>Review và sign</b> regulatory report, <b>notify</b> CEO/Board, <b>authorize</b> Legal engagement</td>
+        <td style="color:var(--muted)">Legal liability là của cá nhân, không thể delegate cho AI. Người ký chịu trách nhiệm pháp lý</td>
+        <td><span class="time-badge">⚡ Trong 72h</span></td>
+      </tr>
+      <tr>
+        <td><b>Budget Request</b><br>Hardware, cloud, contractor</td>
+        <td style="color:#22c55e">Build business case: ROI analysis, vendor comparison, risk assessment, payment schedule</td>
+        <td style="color:var(--human)"><b>APPROVE / REJECT</b> với budget authority. Sign PO nếu approved</td>
+        <td style="color:var(--muted)">Financial authority không thể delegate. AI không có signature authority</td>
+        <td><span class="time-badge">⏰ Same day</span></td>
+      </tr>
+      <tr>
+        <td><b>Monthly Board Report</b><br>Executive reporting</td>
+        <td style="color:#22c55e">Aggregate KPIs, calculate ROI, build slides, write narrative, update risk register</td>
+        <td style="color:var(--human)"><b>Review và sign off</b> trước khi send. Add strategic context. Adjust message cho BGĐ</td>
+        <td style="color:var(--muted)">CIO phải stand behind the numbers. BGĐ sẽ hỏi CIO, không hỏi AI</td>
+        <td><span class="time-badge">⏰ 30-60 phút review</span></td>
+      </tr>
+      <tr>
+        <td><b>Code Review / PR</b><br>Merge to main</td>
+        <td style="color:#22c55e">Flag stale PRs, check CI status, security scan results, coverage report</td>
+        <td style="color:var(--human)">IT team members <b>review code</b> và <b>approve merge</b></td>
+        <td style="color:var(--muted)">Code quality judgment, business logic understanding, architecture decisions cần human expertise</td>
+        <td><span class="time-badge">⏰ Developer time</span></td>
+      </tr>
+      <tr>
+        <td><b>DR Test Results</b><br>Quarterly DR drill</td>
+        <td style="color:#22c55e">Execute drill scenarios, measure RTO/RPO, identify gaps, update runbook</td>
+        <td style="color:var(--human)"><b>Sign off DR test report</b> for Compliance/Audit. Brief BGĐ nếu RTO/RPO missed</td>
+        <td style="color:var(--muted)">Audit và Compliance cần human attestation. Regulator yêu cầu CIO sign</td>
+        <td><span class="time-badge">⏰ Sau mỗi drill</span></td>
+      </tr>
+      <tr>
+        <td><b>Staff Access Change</b><br>Nhân viên resign/transfer</td>
+        <td style="color:#22c55e">Auto-detect từ AD, disable accounts ≤24h, revoke permissions, log in Snow</td>
+        <td style="color:var(--human)">HR + Manager <b>confirm</b> departure/transfer ngày, cung cấp thông tin cho Security biết</td>
+        <td style="color:var(--muted)">HR system thường không real-time. Human loop cần thiết để tránh disable account nhầm</td>
+        <td><span class="time-badge">⏰ HR notify</span></td>
+      </tr>
+      <tr>
+        <td><b>Vendor Contract</b><br>Renewal, renegotiation</td>
+        <td style="color:#22c55e">Analyze SLA performance, market alternatives, cost comparison, draft negotiation points</td>
+        <td style="color:var(--human)"><b>Negotiate</b> và <b>sign</b> contract. Relationship management với vendor</td>
+        <td style="color:var(--muted)">Legal binding contract chỉ người ký được. Relationship và trust không thể AI handle</td>
+        <td><span class="time-badge">⏰ Quarterly review</span></td>
+      </tr>
+      <tr>
+        <td><b>Phishing click &gt;20%</b><br>Department security failure</td>
+        <td style="color:#22c55e">Identify affected employees, generate training assignments, track completion</td>
+        <td style="color:var(--human)">Manager <b>1-on-1 với repeat offenders</b>. HR nếu cần disciplinary action</td>
+        <td style="color:var(--muted)">People management cần human empathy, context, và authority</td>
+        <td><span class="time-badge">⏰ After simulation</span></td>
+      </tr>
+      <tr>
+        <td><b>Board Member Request</b><br>Ad-hoc từ CEO/CFO</td>
+        <td style="color:#22c55e">Feasibility analysis, estimate, draft options memo với pros/cons</td>
+        <td style="color:var(--human)"><b>Review memo</b>, <b>present</b> lên BGĐ, <b>negotiate</b> scope/timeline nếu cần</td>
+        <td style="color:var(--muted)">Political dynamics, relationship context, strategic alignment chỉ người biết</td>
+        <td><span class="time-badge">⏰ Within 2h</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- DAILY TIMELINE WITH HUMANS -->
+<div class="sec-label" style="margin-bottom:16px">TIMELINE NGÀY LÀM VIỆC — CON NGƯỜI CAN THIỆP LÚC NÀO</div>
+<div class="htl">
+
+  <!-- 6:55 -->
+  <div class="htl-row">
+    <div class="htl-time">06:55</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#22c55e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(34,197,94,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(34,197,94,0.2);background:rgba(34,197,94,0.05)">
+        <div class="htl-who" style="color:#22c55e">🤖 CLAUDE — Không cần người</div>
+        <div class="htl-action">Auto-ingest chạy nền: kéo Snow, Jira, GitHub, O365, Monitoring → inputs/</div>
+        <div class="htl-how">Hoàn toàn tự động. Bạn đang ngủ hoặc chưa mở máy. Không cần làm gì.</div>
+        <div class="htl-type" style="color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)">🟢 FULLY AUTO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7:00 - 7:30 -->
+  <div class="htl-row">
+    <div class="htl-time">07:00<br>–07:30</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#22c55e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(34,197,94,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(34,197,94,0.2);background:rgba(34,197,94,0.05)">
+        <div class="htl-who" style="color:#22c55e">🤖 CLAUDE — Không cần người</div>
+        <div class="htl-action">Infra Health Check → Security Watch → Snow Queue Triage → route tickets đến đúng agents</div>
+        <div class="htl-how">Toàn bộ chạy parallel. Không cần bạn làm gì. Alerts sẽ gửi nếu có P1.</div>
+        <div class="htl-type" style="color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)">🟢 FULLY AUTO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8:00 - READ BRIEFING -->
+  <div class="htl-row">
+    <div class="htl-time">08:00</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:var(--human);background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(251,191,36,0.3)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.06)">
+        <div class="htl-who" style="color:var(--human)">👤 BẠN (IT Head) — Cần đọc ~5 phút</div>
+        <div class="htl-action"><b>Đọc Daily IT Briefing</b> trên Teams #it-leadership<br>
+          → Xem CIO action list top 5 hôm nay<br>
+          → Có item nào cần override hoặc re-prioritize?<br>
+          → Có CAB request nào cần approve hôm nay?</div>
+        <div class="htl-how">
+          <b>Nếu tất cả bình thường:</b> Skim qua, confirm top-5 list, tiếp tục ngày làm việc<br>
+          <b>Nếu có 🔴 Critical:</b> Xem chi tiết, quyết định action, gõ lệnh nếu cần<br>
+          <b>Cách interact:</b> Teams reply, hoặc gõ lệnh vào Claude Code (/incident, /request...)
+        </div>
+        <div class="htl-type" style="color:var(--human);border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.1)">👤 HUMAN READ + CONFIRM — 5 phút</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8:00 - CAB IF NEEDED -->
+  <div class="htl-row">
+    <div class="htl-time">08:00<br>–09:00</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:var(--human);background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(251,191,36,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.04)">
+        <div class="htl-who" style="color:var(--human)">👤 BẠN — Nếu có CHG pending CAB (không phải mỗi ngày)</div>
+        <div class="htl-action"><b>Review CAB recommendation từ Snow Agent</b><br>
+          → Snow Agent đã đọc CHG, check CMDB, INC history, GitHub → đã viết recommendation + risk score<br>
+          → Bạn chỉ cần đọc summary và quyết định: APPROVE / REJECT / DEFER</div>
+        <div class="htl-how">
+          <b>Gõ vào Claude Code:</b> <code>/snow cab CHG0012345</code><br>
+          <b>Claude trả về:</b> 1-trang summary với recommendation và risk score<br>
+          <b>Bạn reply:</b> "APPROVE" hoặc "REJECT vì..." → Claude update Snow và notify implementer
+        </div>
+        <div class="htl-type" style="color:var(--human);border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.1)">👤 HUMAN DECISION — 5-10 phút/CHG</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- During day - mostly auto -->
+  <div class="htl-row">
+    <div class="htl-time">09:00<br>–13:00</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#22c55e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(34,197,94,0.15)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(34,197,94,0.15);background:rgba(34,197,94,0.03)">
+        <div class="htl-who" style="color:#22c55e">🤖 CLAUDE — Chạy nền, bạn làm việc bình thường</div>
+        <div class="htl-action">Dev Standup (9:00) · PM Project Pulse · Snow triage ongoing · Security monitoring liên tục</div>
+        <div class="htl-how">
+          <b>Bạn nhận Teams notification nếu:</b><br>
+          • P1 incident xảy ra → Snow Agent alert trong 15 phút<br>
+          • Sprint at risk → Dev Agent flag lên PM + CIO<br>
+          • Security CVE critical → Security Agent alert<br>
+          <b>Nếu không có notification: Bạn không cần làm gì cả</b>
+        </div>
+        <div class="htl-type" style="color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)">🟢 AUTO — Chỉ interrupt nếu có alert</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P1 IF HAPPENS -->
+  <div class="htl-row">
+    <div class="htl-time">⚡ Khi<br>P1 xảy ra</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#f43f5e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(244,63,94,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(244,63,94,0.4);background:rgba(244,63,94,0.06)">
+        <div class="htl-who" style="color:#f43f5e">⚡ P1 INCIDENT — Bạn được notify, hành động theo mức độ</div>
+        <div class="htl-action">
+          <b>0–15 phút:</b> Claude tự handle — classify, route, KB search, work notes, notify team<br>
+          <b>15–30 phút:</b> Bạn nhận email "P1 in progress" — theo dõi, không cần act nếu team đang handle<br>
+          <b>>30 phút:</b> Bạn nhận SMS — cần quyết định: Activate DR? Escalate vendor? Brief CEO?<br>
+          <b>Nếu data breach:</b> Bạn phải act ngay — review draft regulatory report, call Legal, notify CEO
+        </div>
+        <div class="htl-how">
+          <b>Cách bạn interact:</b> Gõ vào Claude Code: <code>/incident "authorize DR activation"</code><br>
+          Claude draft authorization email cho vendor, brief cho CEO, timeline update cho BGĐ<br>
+          <b>Bạn review và send</b> — không phải Claude send thay bạn
+        </div>
+        <div class="htl-type" style="color:#f43f5e;border-color:rgba(244,63,94,0.5);background:rgba(244,63,94,0.1)">⚡ HUMAN DECISION — Time-critical</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Afternoon meeting minutes -->
+  <div class="htl-row">
+    <div class="htl-time">Sau họp<br>bất kỳ</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:var(--human);background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(251,191,36,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.04)">
+        <div class="htl-who" style="color:var(--human)">👤 BẠN — Drop biên bản họp vào inputs/ (2 phút)</div>
+        <div class="htl-action"><b>Paste meeting notes</b> vào inputs/meetings/[date]-[topic].md<br>
+          → Claude tự đọc, extract action items, tạo Jira/Snow tasks, draft follow-up email<br>
+          → Bạn review email draft và send nếu OK</div>
+        <div class="htl-how">
+          <b>Không cần format đẹp:</b> Copy raw từ Notion, OneNote, hoặc gõ tay cũng được<br>
+          Claude sẽ tự hiểu nội dung và tạo structured output<br>
+          <b>Review email trước khi send</b> — Claude draft nhưng bạn là người gửi
+        </div>
+        <div class="htl-type" style="color:var(--human);border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.1)">👤 HUMAN DROP + REVIEW — 2-5 phút</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14:00 SLA -->
+  <div class="htl-row">
+    <div class="htl-time">14:00</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#22c55e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(34,197,94,0.15)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(34,197,94,0.15);background:rgba(34,197,94,0.03)">
+        <div class="htl-who" style="color:#22c55e">🤖 CLAUDE — Không cần người (trừ khi bị escalate)</div>
+        <div class="htl-action">Snow SLA mid-day sweep: tự forecast breach, tự ping owners, tự redistribute workload</div>
+        <div class="htl-how">Bạn chỉ nhận notification nếu SLA breach critical mà Snow không thể auto-handle</div>
+        <div class="htl-type" style="color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)">🟢 AUTO — Exception only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Board request if any -->
+  <div class="htl-row">
+    <div class="htl-time">⚡ BGĐ<br>yêu cầu</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:var(--human);background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(251,191,36,0.2)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.06)">
+        <div class="htl-who" style="color:var(--human)">👤 BẠN — Khi CEO/CFO gửi request (không hàng ngày)</div>
+        <div class="htl-action">CEO email: "Cần dashboard realtime doanh số đại lý"<br>
+          <b>Bạn gõ:</b> <code>/request "Phòng Kinh doanh cần dashboard realtime đại lý"</code><br>
+          Claude tạo feasibility memo trong 15 phút: effort, cost, timeline, risks<br>
+          <b>Bạn đọc và reply cho CEO</b> — với decision của bạn (không phải của Claude)</div>
+        <div class="htl-how">
+          Claude draft reply email với context từ memo<br>
+          <b>Bạn review và send</b> — mang tên bạn, trách nhiệm của bạn<br>
+          Nếu approve: Claude tạo Jira project + Snow REQ + notify PM
+        </div>
+        <div class="htl-type" style="color:var(--human);border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.1)">👤 HUMAN DECISION + COMMUNICATION — 10-15 phút</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 17:30 EOD -->
+  <div class="htl-row">
+    <div class="htl-time">17:30</div>
+    <div class="htl-line-col">
+      <div class="htl-dot" style="border-color:#22c55e;background:var(--bg)"></div>
+      <div class="htl-vline" style="background:rgba(34,197,94,0.1)"></div>
+    </div>
+    <div class="htl-content">
+      <div class="htl-card" style="border-color:rgba(34,197,94,0.15);background:rgba(34,197,94,0.03)">
+        <div class="htl-who" style="color:#22c55e">🤖 CLAUDE — Không cần người</div>
+        <div class="htl-action">EOD Summary: tổng kết ngày, tomorrow's top-5, auto-archive inputs/, Teams EOD report</div>
+        <div class="htl-how">Bạn có thể đọc EOD report trước khi đi về — optional, không bắt buộc<br>
+          Tomorrow's priorities đã được set, sẵn sàng cho 8:00 sáng mai</div>
+        <div class="htl-type" style="color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)">🟢 FULLY AUTO</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUMMARY -->
+<div style="margin-top:36px;background:var(--bg2);border:1px solid rgba(251,191,36,0.3);
+  border-radius:12px;padding:20px 24px">
+  <div class="sec-label" style="margin-bottom:16px">TÓM TẮT — NGÀY LÀM VIỆC VỚI HỆ THỐNG</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;font-size:11px">
+    <div>
+      <div style="color:var(--human);font-family:Syne,sans-serif;font-size:16px;font-weight:800;margin-bottom:6px">~30 phút</div>
+      <div style="color:var(--muted);line-height:1.6">Thời gian bạn cần mỗi ngày<br>để vận hành toàn bộ IT dept<br>với hỗ trợ của hệ thống</div>
+    </div>
+    <div>
+      <div style="color:#22c55e;font-family:Syne,sans-serif;font-size:16px;font-weight:800;margin-bottom:6px">75% auto</div>
+      <div style="color:var(--muted);line-height:1.6">Collect · Analyze · Draft<br>Route · Monitor · Archive<br>Notify · Update records</div>
+    </div>
+    <div>
+      <div style="color:var(--human);font-family:Syne,sans-serif;font-size:16px;font-weight:800;margin-bottom:6px">Bạn làm gì</div>
+      <div style="color:var(--muted);line-height:1.6">Đọc briefing · Approve CHG<br>Quyết định P1 critical<br>Sign reports · Review drafts</div>
+    </div>
+    <div>
+      <div style="color:#f43f5e;font-family:Syne,sans-serif;font-size:16px;font-weight:800;margin-bottom:6px">Không delegate</div>
+      <div style="color:var(--muted);line-height:1.6">Production approve<br>Budget authorization<br>Legal signing · People decisions</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
