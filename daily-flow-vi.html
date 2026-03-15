@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Head — Daily Flow</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+
+:root {
+  --bg:    #0f1724; --bg2: #172135; --bg3: #1e2d42;
+  --border: rgba(255,255,255,0.07);
+  --text:  #e8edf5; --muted: #8899b0;
+  --auto:  #22c55e; --tele: #f59e0b; --deep: #60a5fa;
+  --red:   #f43f5e; --snow: #81efcb; --gh: #c084fc;
+  --o365:  #38bdf8; --jira: #4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;display:none;
+  background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);
+  background-size:48px 48px;opacity:.3}
+
+.page{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:36px 20px 80px}
+
+/* HEADER */
+header{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+.eyebrow{font-size:9px;letter-spacing:5px;color:var(--snow);margin-bottom:8px;opacity:1;font-weight:600}
+h1{font-family:'Syne',sans-serif;font-size:clamp(20px,3.5vw,28px);font-weight:800;letter-spacing:-.5px;color:#f1f5f9}
+h1 em{color:var(--snow);font-style:normal}
+.sub{font-size:11px;color:#7a94ae;margin-top:6px}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 16px;text-align:center}
+.sv{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.sl{font-size:9px;letter-spacing:2px;color:#7a94ae;margin-top:2px}
+
+/* SOURCE CHIPS */
+.sources{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px;align-items:center}
+.src-label{font-size:9px;letter-spacing:3px;color:#7fb3d3;margin-right:4px;font-weight:600}
+.chip{font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid;
+  display:flex;align-items:center;gap:5px;letter-spacing:.5px}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* LEGEND */
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.leg{font-size:10px;letter-spacing:.5px;padding:5px 12px;border-radius:4px;border:1px solid;font-weight:500}
+
+/* TIMELINE */
+.tl{position:relative}
+.tl-line{position:absolute;left:80px;top:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,transparent,var(--border) 4%,var(--border) 96%,transparent)}
+
+/* SECTION */
+.sec{font-size:9px;letter-spacing:4px;color:#7fb3d3;
+  padding:18px 0 10px 116px;display:flex;align-items:center;gap:12px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* BLOCK */
+.block{display:grid;grid-template-columns:80px 36px 1fr;
+  margin-bottom:3px;opacity:0;animation:fi .35s forwards}
+@keyframes fi{to{opacity:1}}
+
+.tc{padding-top:15px;text-align:right;font-size:11px}
+.th{font-size:14px;color:#ffffff;font-weight:700;line-height:1}
+.tm{font-size:9px;color:var(--muted)}
+
+.nc{display:flex;flex-direction:column;align-items:center;padding-top:17px}
+.node{width:11px;height:11px;border-radius:50%;border:2px solid;background:var(--bg);
+  position:relative;z-index:2;flex-shrink:0;transition:all .2s;cursor:pointer}
+.block:hover .node{transform:scale(1.5)}
+
+.cc{padding:8px 0 14px 0}
+.card{background:var(--bg2);border:1px solid rgba(255,255,255,0.12);border-radius:10px;
+  padding:14px 16px;cursor:pointer;position:relative;overflow:hidden;
+  transition:background .2s,border-color .2s}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.card:hover{background:var(--bg3);border-color:rgba(255,255,255,0.2)}
+
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.ctitle{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#ffffff;line-height:1.3;letter-spacing:-.2px}
+.cwho{font-size:10px;color:#7a94ae;margin-top:3px}
+.badges{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.b{font-size:8px;letter-spacing:1px;padding:3px 8px;border-radius:3px;border:1px solid;white-space:nowrap;font-weight:600}
+
+/* DETAIL */
+.detail{display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px}
+.card.open .detail{display:block}
+.steps{display:flex;flex-direction:column;gap:7px}
+.step{display:flex;gap:10px;font-size:11px;line-height:1.5}
+.si{flex-shrink:0;width:20px;text-align:center}
+.sb{color:#a0b0c4}.sb b{color:#dde7f5}
+
+.srcs{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
+.src{font-size:9px;padding:3px 9px;border-radius:3px;border:1px solid;font-weight:500}
+.out{margin-top:10px;font-size:10px;color:#8aabb0;display:flex;align-items:center;gap:5px}
+.out b{color:#c8dde5}
+
+/* Color util */
+.c-auto{color:var(--auto)}.c-tele{color:var(--tele)}.c-deep{color:var(--deep)}
+.c-red{color:var(--red)}.c-snow{color:var(--snow)}.c-gh{color:var(--gh)}
+.c-o365{color:var(--o365)}.c-jira{color:var(--jira)}
+
+.bg-auto{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3)}
+.bg-tele{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)}
+.bg-deep{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.3)}
+.bg-red {background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3)}
+.bg-snow{background:rgba(129,239,203,.1);border-color:rgba(129,239,203,.35)}
+.bg-gh  {background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3)}
+.bg-o365{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3)}
+.bg-jira{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3)}
+
+.before-auto::before{background:var(--auto)}
+.before-tele::before{background:var(--tele)}
+.before-deep::before{background:var(--deep)}
+.before-red::before {background:var(--red)}
+.before-snow::before{background:var(--snow)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div>
+    <div class="eyebrow">IT DEPT HEAD — INSURANCE CO. VN</div>
+    <h1>Daily Workflow <em>with Claude AI</em></h1>
+    <div class="sub">ServiceNow · Jira · GitHub · Office 365 · 5 Agents · Auto-archive</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="sv c-auto">11</div><div class="sl">AUTO</div></div>
+    <div class="stat"><div class="sv c-tele">9</div><div class="sl">TELE</div></div>
+    <div class="stat"><div class="sv c-deep">10</div><div class="sl">DEEP</div></div>
+    <div class="stat"><div class="sv c-snow">30</div><div class="sl">WORKFLOWS</div></div>
+  </div>
+</header>
+
+<div class="sources">
+  <div class="src-label">DATA IN</div>
+  <div class="chip bg-snow c-snow"><div class="cdot" style="background:var(--snow)"></div>ServiceNow</div>
+  <div class="chip bg-jira c-jira"><div class="cdot" style="background:var(--jira)"></div>Jira</div>
+  <div class="chip bg-gh c-gh"><div class="cdot" style="background:var(--gh)"></div>GitHub</div>
+  <div class="chip bg-o365 c-o365"><div class="cdot" style="background:var(--o365)"></div>Office 365</div>
+  <div class="chip" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">
+    <div class="cdot" style="background:#fb923c"></div>Monitoring</div>
+  <div class="chip" style="background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.2);color:#94a3b8">
+    <div class="cdot" style="background:#94a3b8"></div>Core System</div>
+</div>
+
+<div class="legend">
+  <div class="leg bg-auto c-auto">🟢 T1 Auto</div>
+  <div class="leg bg-tele c-tele">🟡 T2 Tele — gõ lệnh</div>
+  <div class="leg bg-deep c-deep">🔵 T3 Deep</div>
+  <div class="leg bg-red c-red">🔴 On-demand</div>
+  <div class="leg bg-snow c-snow">❄️ ServiceNow</div>
+</div>
+
+<div class="tl">
+<div class="tl-line"></div>
+
+<!-- ═══ PRE-START ═══ -->
+<div class="sec">KHỞI ĐỘNG — 06:55</div>
+
+<div class="block" style="animation-delay:.05s">
+  <div class="tc"><div class="th">06</div><div class="tm">55</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--auto)"></div></div>
+  <div class="cc"><div class="card before-auto" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🤖 Auto Ingest — Kéo data từ tất cả sources</div>
+        <div class="cwho">Claude Code scheduler · Chạy nền tự động</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+        <div class="b bg-gh c-gh">GH</div>
+        <div class="b bg-o365 c-o365">O365</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>ServiceNow:</b> Incidents P1/P2 còn open, change requests pending CAB, SLA breach tickets, new service requests từ users, problem records chưa root cause</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira:</b> Sprint burndown, overdue tasks, unassigned tickets, blocked issues, PR links</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub:</b> Commits 24h, stale PRs &gt;2 ngày, CI/CD failures, recent deployments</div></div>
+        <div class="step"><div class="si c-o365">📧</div><div class="sb"><b>Outlook:</b> Email importance=High → auto-save inputs/emails/</div></div>
+        <div class="step"><div class="si c-o365">💬</div><div class="sb"><b>Teams:</b> @ITHead mentions, action keywords → inputs/notes/</div></div>
+        <div class="step"><div class="si" style="color:#fb923c">📡</div><div class="sb"><b>Monitoring:</b> Uptime đêm qua, alerts chưa close, backup status</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow API</div>
+        <div class="src bg-jira c-jira">Jira API</div>
+        <div class="src bg-gh c-gh">GitHub API</div>
+        <div class="src bg-o365 c-o365">Graph API</div>
+        <div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitor API</div>
+      </div>
+      <div class="out">📥 Output: <b>inputs/ populated · ingest_manifest.json</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══ MORNING ═══ -->
+<div class="sec">BUỔI SÁNG</div>
+
+<!-- 07:00 -->
+<div class="block" style="animation-delay:.1s">
+  <div class="tc"><div class="th">07</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--auto)"></div></div>
+  <div class="cc"><div class="card before-auto" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🖥️ Infra Health Check + Security Watch</div>
+        <div class="cwho">Agent Infra · Agent Security · Parallel</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Infra:</b> Incidents liên quan infrastructure P1/P2 chưa resolve, CI health alerts từ CMDB, maintenance window hôm nay</div></div>
+        <div class="step"><div class="si" style="color:#fb923c">📡</div><div class="sb"><b>Monitoring:</b> CPU/RAM/Disk &gt;80%, network latency, backup job kết quả đêm qua</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Security:</b> Incidents dạng security chưa assign, access requests quá SLA</div></div>
+        <div class="step"><div class="si" style="color:var(--red)">🔐</div><div class="sb"><b>SIEM:</b> Brute force, anomalous login, malware alerts, CVE mới ảnh hưởng hệ thống</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow INC</div>
+        <div class="src bg-snow c-snow">Snow CMDB</div>
+        <div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div>
+      </div>
+      <div class="out">📤 Output: <b>Teams #it-infra #it-security morning status</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 07:30 -->
+<div class="block" style="animation-delay:.14s">
+  <div class="tc"><div class="th">07</div><div class="tm">30</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--snow)"></div></div>
+  <div class="cc"><div class="card before-snow" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">❄️ ServiceNow Daily Queue Triage</div>
+        <div class="cwho">Agent CIO · Phân loại Snow queue → 4 sub-agents</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW CORE</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Incidents:</b> P1/P2 → route Infra/Security Agent. P3/P4 → queue xử lý ban ngày</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Service Requests:</b> Requests mới → phân loại dev / infra / access / procurement</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Change Requests (CHG):</b> CAB pending hôm nay → flag CIO approve trước implementation window</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>SLA Breach Risk:</b> Tickets sẽ breach SLA trong 2h → escalate ngay lập tức</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Problem Records:</b> Problems open &gt;7 ngày chưa root cause → push resolution</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow INC</div>
+        <div class="src bg-snow c-snow">Snow REQ</div>
+        <div class="src bg-snow c-snow">Snow CHG</div>
+        <div class="src bg-snow c-snow">Snow SLA</div>
+        <div class="src bg-snow c-snow">Snow PRB</div>
+      </div>
+      <div class="out">📤 Output: <b>Snow queue summary · 4 agents nhận task · CIO action list</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 08:00 -->
+<div class="block" style="animation-delay:.18s">
+  <div class="tc"><div class="th">08</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--auto)"></div></div>
+  <div class="cc"><div class="card before-auto" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🌅 Daily IT Briefing — CIO Morning Report</div>
+        <div class="cwho">Agent CIO · Aggregate Snow + Jira + GitHub + Monitoring</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+        <div class="b bg-gh c-gh">GH</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si">🔴</div><div class="sb"><b>Critical:</b> Snow P1 open, SLA breach, security alerts chưa xử lý, CI/CD fail production</div></div>
+        <div class="step"><div class="si">🟡</div><div class="sb"><b>Warning:</b> Snow P2, CHG pending approval, stale PRs, Jira overdue milestones</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow KPIs:</b> MTTR hôm qua, SLA compliance %, FCR rate, backlog trend vs tuần trước</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira KPIs:</b> Sprint velocity, milestone hit rate, blocked tasks count</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub KPIs:</b> Deploy frequency, PR cycle time, CI pass rate</div></div>
+        <div class="step"><div class="si">📋</div><div class="sb"><b>CIO To-do:</b> Top 5 việc ưu tiên hôm nay với deadline cụ thể</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Teams #it-leadership · Email BGĐ nếu critical · daily_log/YYYY-MM-DD.md</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 09:00 -->
+<div class="block" style="animation-delay:.22s">
+  <div class="tc"><div class="th">09</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--auto)"></div></div>
+  <div class="cc"><div class="card before-auto" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">💻 Dev Standup · PM Project Pulse</div>
+        <div class="cwho">Agent Dev + Agent PM · Parallel</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+        <div class="b bg-gh c-gh">GH</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub (Dev):</b> Commits hôm qua per developer, PRs waiting review, CI/CD status</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira (Dev):</b> Sprint burndown, blocked tasks, developer bị stuck &gt;4h</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow → Dev:</b> Bug reports từ users (defect category) cần fix sprint này</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira (PM):</b> Milestone hôm nay, overdue tasks, stakeholder deliverables</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow → PM:</b> Enhancement requests pending triage từ phòng ban</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Teams #dev-team standup · Jira sprint board updated</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══ MID-DAY ON-DEMAND ═══ -->
+<div class="sec">GIỮA NGÀY — ON-DEMAND</div>
+
+<!-- Snow P1 Incident -->
+<div class="block" style="animation-delay:.26s">
+  <div class="tc"><div class="th">??</div><div class="tm">khi có</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--red)"></div></div>
+  <div class="cc"><div class="card before-red" onclick="toggle(this)" style="border-color:rgba(129,239,203,.2);box-shadow:0 0 16px rgba(129,239,203,.06)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🚨 Snow P1/P2 Incident → Claude Auto-Response</div>
+        <div class="cwho">Snow webhook → Claude Code → Agent Infra / Security</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-red c-red">ON-DEMAND</div>
+        <div class="b bg-snow c-snow">❄️ SNOW TRIGGER</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Webhook:</b> P1/P2 được tạo → trigger Claude Code trong &lt;2 phút</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow INC details:</b> Đọc description, CI affected (từ CMDB), related incidents, assignment group</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow CHG cross-check:</b> Có change window active không? Recent change nào trong 24h?</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow KB:</b> Tìm known error / runbook liên quan → cite solution ngay</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub:</b> Recent deployment nào trùng thời điểm incident?</div></div>
+        <div class="step"><div class="si" style="color:#fb923c">📡</div><div class="sb"><b>Monitoring:</b> Alert nào triggered cùng lúc? Scope ảnh hưởng bao nhiêu users?</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Claude auto-update Snow:</b> Ghi work notes, probable cause, recommended fix, reassign nếu sai team</div></div>
+        <div class="step"><div class="si">📢</div><div class="sb"><b>Notify:</b> Teams #incident-bridge, Email CIO &lt;15 phút, SMS nếu P1 &gt;30 phút</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow INC</div>
+        <div class="src bg-snow c-snow">Snow CMDB</div>
+        <div class="src bg-snow c-snow">Snow KB</div>
+        <div class="src bg-snow c-snow">Snow CHG</div>
+        <div class="src bg-gh c-gh">GitHub</div>
+        <div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitor</div>
+      </div>
+      <div class="out">📤 Output: <b>Snow work notes updated · incident_report.md · Teams alert</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- Snow CAB -->
+<div class="block" style="animation-delay:.3s">
+  <div class="tc"><div class="th">??</div><div class="tm">khi có</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--snow)"></div></div>
+  <div class="cc"><div class="card before-snow" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">❄️ Snow Change Request — CAB AI Review</div>
+        <div class="cwho">Agent CIO · Phân tích CHG → recommend trước khi CIO duyệt</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-tele c-tele">T2 TELE</div>
+        <div class="b bg-snow c-snow">❄️ SNOW CHG</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow CHG:</b> Đọc scope, risk level, rollback plan, implementation window, implementer</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow CMDB:</b> CIs bị ảnh hưởng — có CI critical (Core Insurance System) không?</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow INC history:</b> CI này có incident gần đây không? Pattern lỗi?</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira:</b> Có sprint task / story liên quan chưa done? Conflict deploy?</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub:</b> Code đã pass review & test chưa? CI green?</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Claude recommendation:</b> APPROVE / REJECT / DEFER + risk score + ghi CAB notes vào Snow</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow CHG</div>
+        <div class="src bg-snow c-snow">Snow CMDB</div>
+        <div class="src bg-snow c-snow">Snow INC</div>
+        <div class="src bg-jira c-jira">Jira</div>
+        <div class="src bg-gh c-gh">GitHub</div>
+      </div>
+      <div class="out">📤 Output: <b>Snow CHG CAB notes updated · Decision memo → CIO</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- Ad-hoc request -->
+<div class="block" style="animation-delay:.34s">
+  <div class="tc"><div class="th">??</div><div class="tm">khi có</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--tele)"></div></div>
+  <div class="cc"><div class="card before-tele" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">💬 /request — Yêu cầu từ phòng ban</div>
+        <div class="cwho">Agent PM · Email/Teams → feasibility → Snow Service Catalog</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-tele c-tele">T2 TELE</div>
+        <div class="b bg-snow c-snow">❄️ SNOW REQ</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si">📥</div><div class="sb"><b>Input:</b> Email/Teams request → auto-save inputs/emails/ → Claude đọc</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Service Catalog:</b> Có catalog item nào match request? Standard SLA là bao lâu?</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira capacity:</b> Team có bandwidth? Sprint nào có thể nhận? Estimate effort</div></div>
+        <div class="step"><div class="si">📋</div><div class="sb"><b>Feasibility memo:</b> Effort, timeline, cost, risk → trong 2h</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow REQ:</b> Nếu approved → tạo service request, link Jira story, notify requester</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Feasibility doc · Snow REQ created · Jira story · Reply email</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- Deploy check -->
+<div class="block" style="animation-delay:.38s">
+  <div class="tc"><div class="th">??</div><div class="tm">khi có</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--tele)"></div></div>
+  <div class="cc"><div class="card before-tele" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🚀 /deploy — Post-Deployment Check</div>
+        <div class="cwho">Agent Dev · GitHub + Snow + Monitoring</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-tele c-tele">T2 TELE</div>
+        <div class="b bg-snow c-snow">❄️ SNOW CHG</div>
+        <div class="b bg-gh c-gh">GH</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub:</b> Release notes, commits included, test pass rate</div></div>
+        <div class="step"><div class="si" style="color:#fb923c">📡</div><div class="sb"><b>Monitoring:</b> Error rate 2h sau deploy so với baseline. P95 response time</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow INC watch:</b> Có incident mới tạo sau deploy liên quan app vừa release?</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Nếu OK:</b> Claude update Snow CHG status = Closed, ghi PIR (Post Implementation Review)</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Nếu lỗi:</b> Tạo Snow P1 incident, link CHG, trigger rollback, notify team</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Snow CHG closed · PIR notes · Teams notification</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══ AFTERNOON ═══ -->
+<div class="sec">CHIỀU</div>
+
+<!-- 14:00 Snow SLA -->
+<div class="block" style="animation-delay:.42s">
+  <div class="tc"><div class="th">14</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--snow)"></div></div>
+  <div class="cc"><div class="card before-snow" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">❄️ Snow SLA Mid-day Sweep + Jira PM Check</div>
+        <div class="cwho">Agent CIO · Auto SLA forecast · Agent PM milestone check</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW SLA</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>SLA Forecast:</b> Tickets sẽ breach SLA trong 4h tới → Claude tự escalate + reassign trong Snow</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Workload balance:</b> Agent nào overloaded? Redistribute tickets tự động</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Problem Management:</b> PRB open &gt;7 ngày → push root cause deadline</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira PM:</b> Milestone hôm nay đã done chưa? Stakeholder nào cần update chiều nay?</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Sprint health:</b> Burndown có đúng pace? Còn mấy ngày sprint? Velocity OK?</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Snow tickets auto-updated · Teams alert SLA breach · Jira updated</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 15:30 Meeting minutes -->
+<div class="block" style="animation-delay:.46s">
+  <div class="tc"><div class="th">15</div><div class="tm">30</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--tele)"></div></div>
+  <div class="cc"><div class="card before-tele" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">📝 Meeting Minutes → Action Items Auto-Process</div>
+        <div class="cwho">Agent PM · inputs/meetings/ → Jira + Snow + Teams</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-tele c-tele">T2 TELE</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si">📄</div><div class="sb"><b>Drop file:</b> Paste hoặc drop biên bản họp vào inputs/meetings/ sau khi họp xong</div></div>
+        <div class="step"><div class="si">🤖</div><div class="sb"><b>Claude extract:</b> Tự phát hiện action items, owner, deadline từ nội dung họp</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira tasks:</b> Tạo Jira tickets cho dev/PM items, gắn sprint, assign đúng người</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow tasks:</b> Tạo Snow service requests cho infra/support items, assign đúng team</div></div>
+        <div class="step"><div class="si">📧</div><div class="sb"><b>Follow-up email:</b> Draft email tóm tắt kết quả họp + action items gửi participants</div></div>
+        <div class="step"><div class="si">✅</div><div class="sb"><b>Mark processed:</b> File được đánh dấu [PROCESSED] → sẵn sàng archive</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Jira tickets · Snow requests · Follow-up email draft</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- Security weekly (Thứ 6) -->
+<div class="block" style="animation-delay:.5s">
+  <div class="tc"><div class="th">16</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--deep)"></div></div>
+  <div class="cc"><div class="card before-deep" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🔐 Security + Stakeholder Weekly Update <span style="font-size:10px;color:var(--muted)">(Thứ 6)</span></div>
+        <div class="cwho">Agent Security + Agent PM · Weekly auto</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+        <div class="b bg-o365 c-o365">O365</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Security INC:</b> Security incidents tuần qua: resolve rate, MTTR, recurring patterns</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Access Requests:</b> Requests tạo/revoke tài khoản tuần này — có ex-employee nào chưa disable?</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira weekly:</b> Sprint progress, milestone tuần tới, risk register update</div></div>
+        <div class="step"><div class="si c-o365">📧</div><div class="sb"><b>Teams/Email:</b> Stakeholder update per-department: đã làm gì, tuần tới deliver gì</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Security report · Stakeholder Teams update · Snow access reviewed</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══ EOD ═══ -->
+<div class="sec">CUỐI NGÀY</div>
+
+<!-- 17:30 EOD -->
+<div class="block" style="animation-delay:.54s">
+  <div class="tc"><div class="th">17</div><div class="tm">30</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--auto)"></div></div>
+  <div class="cc"><div class="card before-auto" onclick="toggle(this)">
+    <div class="ct">
+      <div>
+        <div class="ctitle">🌙 /eod — End of Day Summary + Auto Archive</div>
+        <div class="cwho">Agent CIO · Tổng kết · Dọn inputs · Archive · To-do ngày mai</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+        <div class="b bg-snow c-snow">❄️ SNOW</div>
+        <div class="b bg-jira c-jira">JIRA</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si">📥</div><div class="sb"><b>Process remaining inputs:</b> Xử lý files chưa processed trong inputs/ — emails, notes, PDFs còn sót</div></div>
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow EOD:</b> Incidents open cuối ngày, SLA compliance final %, tickets resolved hôm nay</div></div>
+        <div class="step"><div class="si c-jira">🟩</div><div class="sb"><b>Jira EOD:</b> Tasks done hôm nay, carry-over sang ngày mai, sprint health</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub EOD:</b> PRs merged, deployments done, CI status cuối ngày</div></div>
+        <div class="step"><div class="si">📋</div><div class="sb"><b>To-do ngày mai:</b> Top 5 việc ưu tiên dựa trên Snow queue + Jira + carry-over</div></div>
+        <div class="step"><div class="si">📦</div><div class="sb"><b>Auto archive:</b> python auto_archive.py → move [PROCESSED] files sang archive/YYYY-MM/</div></div>
+        <div class="step"><div class="si c-o365">💬</div><div class="sb"><b>Teams EOD report:</b> Gửi summary #it-leadership — done / pending / tomorrow</div></div>
+      </div>
+      <div class="srcs">
+        <div class="src bg-snow c-snow">Snow INC/REQ</div>
+        <div class="src bg-jira c-jira">Jira Sprint</div>
+        <div class="src bg-gh c-gh">GitHub</div>
+        <div class="src bg-o365 c-o365">Teams</div>
+      </div>
+      <div class="out">📤 Output: <b>daily_log/YYYY-MM-DD.md · archive/ cleaned · Teams EOD · tomorrow todo</b></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══ OVERNIGHT ═══ -->
+<div class="sec">ĐÊM — OVERNIGHT AUTO</div>
+
+<!-- 22:00 overnight -->
+<div class="block" style="animation-delay:.58s">
+  <div class="tc"><div class="th">22</div><div class="tm">00</div></div>
+  <div class="nc"><div class="node" style="border-color:var(--muted)"></div></div>
+  <div class="cc"><div class="card" onclick="toggle(this)" style="border-color:rgba(71,85,105,.3)">
+    <div class="ct">
+      <div>
+        <div class="ctitle" style="color:#94a3b8">⚙️ Overnight Scheduled Tasks</div>
+        <div class="cwho">Chạy tự động — không cần ai online</div>
+      </div>
+      <div class="badges">
+        <div class="b bg-auto c-auto">T1 AUTO</div>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="steps">
+        <div class="step"><div class="si c-snow">❄️</div><div class="sb"><b>Snow Batch:</b> Tổng kết SLA metrics ngày, update problem records, generate daily stats</div></div>
+        <div class="step"><div class="si" style="color:#fb923c">📡</div><div class="sb"><b>Monitoring:</b> Backup jobs, health checks, capacity threshold alerts</div></div>
+        <div class="step"><div class="si c-gh">🐙</div><div class="sb"><b>GitHub:</b> Dependency vulnerability scan (Dependabot), stale branch cleanup alerts</div></div>
+        <div class="step"><div class="si">🔐</div><div class="sb"><b>Security:</b> Log rotation, SIEM daily digest, certificate expiry check</div></div>
+        <div class="step"><div class="si">🤖</div><div class="sb"><b>Chuẩn bị 06:55:</b> Pre-fetch data, warm cache → sáng mai ingest chạy nhanh hơn</div></div>
+      </div>
+      <div class="out">📤 Output: <b>Logs archived · Alerts queued · Ready for 06:55 ingest</b></div>
+    </div>
+  </div></div>
+</div>
+
+</div><!-- /timeline -->
+
+<!-- FLOW SUMMARY -->
+<div style="margin-top:48px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
+  <div style="font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:16px">DAILY AUTOMATION SUMMARY</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+    <div style="text-align:center;padding:12px;background:rgba(34,197,94,0.08);border-radius:8px;border:1px solid rgba(34,197,94,.25)">
+      <div style="font-size:22px;font-weight:700;color:var(--auto);font-family:'Syne',sans-serif">90%</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px">TỰ ĐỘNG</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(129,239,203,.15)">
+      <div style="font-size:22px;font-weight:700;color:var(--snow);font-family:'Syne',sans-serif">5</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px">SNOW TOUCHPOINTS</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(74,222,128,.15)">
+      <div style="font-size:22px;font-weight:700;color:var(--jira);font-family:'Syne',sans-serif">4</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px">JIRA TOUCHPOINTS</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(96,165,250,.15)">
+      <div style="font-size:22px;font-weight:700;color:var(--deep);font-family:'Syne',sans-serif">0</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px">MANUAL FILE MOVE</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(245,158,11,.15)">
+      <div style="font-size:22px;font-weight:700;color:var(--tele);font-family:'Syne',sans-serif">~30'</div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px">CIO TIME/NGÀY</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;font-size:10px;color:var(--muted);line-height:1.7">
+    💡 <b style="color:var(--text)">Bạn chỉ cần:</b> Đọc briefing 8AM · Duyệt CAB recommendations · Drop PDF/notes khi cần · Quyết định final cho escalations
+  </div>
+</div>
+
+</div>
+<script>
+function toggle(card){
+  card.classList.toggle('open');
+  // animate all blocks on first load
+}
+// Stagger animations
+document.querySelectorAll('.block').forEach((b,i)=>{
+  b.style.animationDelay = (0.04 + i*0.06)+'s';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Agents — Daily Workflows (EN)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+:root{
+  --bg:#111d2e;--bg2:#1a2840;--bg3:#223350;
+  --border:rgba(255,255,255,0.13);
+  --text:#eef2fa;--muted:#8da0b8;--faint:#5a7294;
+  --cio:#60a5fa;--dev:#a78bfa;--pm:#34d399;
+  --infra:#fb923c;--sec:#f43f5e;--snow:#6ee7b7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
+.page{max-width:1060px;margin:0 auto;padding:32px 20px 80px}
+.hdr{margin-bottom:28px}
+.eye{font-size:9px;letter-spacing:5px;color:var(--snow);margin-bottom:8px;font-weight:600}
+h1{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,27px);font-weight:800;color:#fff;letter-spacing:-.5px}
+h1 span{color:var(--snow)}
+.hsub{font-size:11px;color:#8da0b8;margin-top:5px}
+
+/* TABS */
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:24px;
+  padding:6px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)}
+.tab{flex:1;min-width:88px;padding:10px 6px;border-radius:8px;border:none;
+  background:transparent;color:var(--muted);cursor:pointer;
+  font-family:'DM Mono',monospace;font-size:10px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s}
+.tab:hover{color:var(--text);background:rgba(255,255,255,0.04)}
+.tab.active{color:#fff;background:var(--bg3)}
+.tab-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tab-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700}
+.tab-role{font-size:8px;opacity:.85;letter-spacing:.3px;color:#8da0b8}
+
+/* PANEL */
+.panel{display:none}.panel.active{display:block}
+
+/* AGENT META */
+.agent-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  margin-bottom:20px;padding:14px 18px;border-radius:12px;border:1px solid}
+.am-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 10px currentColor}
+.am-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff}
+.am-role{font-size:10px;color:#8da0b8;margin-top:2px}
+.am-kpis{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.kpitag{font-size:9px;padding:3px 8px;border-radius:3px;
+  border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#8fb3cc}
+
+/* TIMELINE */
+.tl{position:relative}
+.tl-line{position:absolute;left:72px;top:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,transparent,var(--border) 4%,var(--border) 96%,transparent)}
+
+/* BLOCK */
+.blk{display:grid;grid-template-columns:72px 28px 1fr;
+  margin-bottom:3px;opacity:0;animation:fi .3s forwards}
+@keyframes fi{to{opacity:1}}
+.tc{padding-top:14px;text-align:right;font-size:11px;line-height:1}
+.th{font-size:13px;color:#ffffff;font-weight:700}
+.tm{font-size:9px;color:#7a9ab5;margin-top:1px}
+.nc{display:flex;flex-direction:column;align-items:center;padding-top:16px}
+.nd{width:10px;height:10px;border-radius:50%;border:2px solid;
+  background:var(--bg);z-index:2;flex-shrink:0;transition:transform .2s;cursor:pointer}
+.blk:hover .nd{transform:scale(1.6)}
+.cc{padding:7px 0 14px}
+
+/* CARD */
+.card{border-radius:10px;border:1px solid var(--border);padding:13px 15px;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .2s,background .2s;background:var(--bg2)}
+.card:hover{background:var(--bg3);border-color:rgba(255,255,255,0.2)}
+.card.open{border-color:rgba(255,255,255,0.18)}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;
+  gap:8px;flex-wrap:wrap}
+.ctitle{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  color:#ffffff;line-height:1.3;letter-spacing:-.1px}
+.cwho{font-size:9px;color:#7a9ab5;margin-top:3px}
+.badges{display:flex;gap:4px;flex-shrink:0}
+.b{font-size:8px;letter-spacing:.5px;padding:2px 7px;border-radius:3px;
+  border:1px solid;white-space:nowrap;font-weight:600}
+.bg-auto{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:#22c55e}
+.bg-tele{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);color:#f59e0b}
+.bg-deep{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.35);color:#60a5fa}
+.bg-od{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.35);color:#f43f5e}
+.bg-wh{background:rgba(244,63,94,.15);border-color:rgba(244,63,94,.5);color:#ff6b7a}
+
+/* DETAIL */
+.det{display:none;margin-top:11px;padding-top:11px;
+  border-top:1px solid rgba(255,255,255,0.08)}
+.card.open .det{display:block}
+.rows{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:9px;font-size:11px;line-height:1.55}
+.ri{flex-shrink:0;width:18px;text-align:center}
+.rb{color:#9db5cc}.rb b{color:#dce8f5}
+.srcs{display:flex;gap:4px;flex-wrap:wrap;margin-top:9px}
+.src{font-size:9px;padding:3px 9px;border-radius:3px;border:1px solid;font-weight:600}
+.out{margin-top:9px;font-size:10px;color:var(--muted);
+  display:flex;gap:5px;align-items:flex-start;line-height:1.5}
+.out b{color:#b8cfe0}
+.kl{margin-top:8px;font-size:10px;padding:7px 10px;border-radius:5px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+.kl span{color:#7a9ab5}.kl b{color:#ddeaf8}
+
+/* SECTION */
+.sec{font-size:9px;letter-spacing:4px;color:#5a8aaa;
+  padding:16px 0 9px 100px;display:flex;align-items:center;gap:10px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* DAY SUMMARY */
+.day-sum{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ds{background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;text-align:center}
+.dsv{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
+.dsl{font-size:9px;letter-spacing:2px;color:#7a9ab5;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <div class="eye">IT CIO WORKSPACE — INSURANCE CO.</div>
+  <h1>Daily Workflow <span>— per Agent</span></h1>
+  <div class="hsub">6 agents · 30 workflows · Click tab to switch agent · Click block for details</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('cio',this)">
+    <div class="tab-dot" style="background:var(--cio)"></div>
+    <div class="tab-name">CIO</div><div class="tab-role">IT HEAD</div>
+  </button>
+  <button class="tab" onclick="sw('dev',this)">
+    <div class="tab-dot" style="background:var(--dev)"></div>
+    <div class="tab-name">DEV</div><div class="tab-role">DEVELOPMENT</div>
+  </button>
+  <button class="tab" onclick="sw('pm',this)">
+    <div class="tab-dot" style="background:var(--pm)"></div>
+    <div class="tab-name">PM</div><div class="tab-role">PROJECT MGR</div>
+  </button>
+  <button class="tab" onclick="sw('infra',this)">
+    <div class="tab-dot" style="background:var(--infra)"></div>
+    <div class="tab-name">INFRA</div><div class="tab-role">INFRASTRUCTURE</div>
+  </button>
+  <button class="tab" onclick="sw('sec',this)">
+    <div class="tab-dot" style="background:var(--sec)"></div>
+    <div class="tab-name">SECURITY</div><div class="tab-role">CYBERSEC</div>
+  </button>
+  <button class="tab" onclick="sw('snow',this)">
+    <div class="tab-dot" style="background:var(--snow)"></div>
+    <div class="tab-name">SNOW</div><div class="tab-role">ITSM</div>
+  </button>
+</div>
+<div class="panel" id="panel-cio">
+  <div class="agent-meta" style="border-color:var(--cio)44;background:var(--cio)0d">
+    <div class="am-dot" style="background:var(--cio)"></div>
+    <div><div class="am-name">Agent CIO — IT Dept Head</div><div class="am-role">C-Level · Orchestrates 5 sub-agents · Reports to CEO/BOD</div></div>
+    <div class="am-kpis"><div class="kpitag">0 critical missed</div><div class="kpitag">Board informed</div><div class="kpitag">Scorecard ≥85%</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">PRE-START</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">06</div><div class="tm">55</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--cio)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cio)"></div>
+        <div class="ct">
+          <div><div class="ctitle">⏰ W0 — Read ingest_manifest — Know what's happening today</div><div class="cwho">auto_ingest.py runs at 6:55 · Prepares context for Daily Briefing</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📋</div><div class="rb"><b>Manifest:</b> How many new emails, Snow P1/P2, Jira tasks, GitHub alerts today</div></div><div class="row"><div class="ri">🧭</div><div class="rb"><b>Context:</b> Maintenance window? Deadline? Board meeting? Special events?</div></div></div>
+          <div class="out">📤 Output: <b>Context ready for Daily Briefing at 8:00 AM</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">MORNING</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">08</div><div class="tm">00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--cio)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cio)"></div>
+        <div class="ct">
+          <div><div class="ctitle">🌅 W1 — Daily IT Briefing — Aggregate from 5 agents</div><div class="cwho">Daily 8:00 AM · Read reports: Infra 7:00 · Snow 7:30 · Security 7:30 · Dev 9:00 · PM 8:30</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🟠</div><div class="rb"><b>Infra:</b> Overnight uptime, server health, backup status, CI health alerts</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow:</b> Queue size, open P1/P2, SLA breach risk, CHG pending today</div></div><div class="row"><div class="ri">🔴</div><div class="rb"><b>Security:</b> Overnight alerts, access anomalies, new CVEs needing patch</div></div><div class="row"><div class="ri">🟣</div><div class="rb"><b>Dev:</b> Sprint velocity, stale PRs, CI/CD status</div></div><div class="row"><div class="ri">🟢</div><div class="rb"><b>PM:</b> Today's milestones, overdue tasks, stakeholder deliverables</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>CIO To-do:</b> Top 5 priority tasks today with specific deadlines</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>0 critical missed · BGĐ luôn informed đúng lúc</b></div><div class="out">📤 Output: <b>Teams #it-leadership · Board email if critical · daily_log/YYYY-MM-DD.md</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">MID-DAY — ON-DEMAND</div>
+
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">??</div><div class="tm">as needed</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">💬 W3 — /request — Ad-hoc Board Request</div><div class="cwho">CEO / CFO / BOD submits request · Response memo within 2h</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📧</div><div class="rb"><b>Input:</b> Email/Teams from Board → auto-save to inputs/emails/ → Claude reads</div></div><div class="row"><div class="ri">🔍</div><div class="rb"><b>Assess:</b> Technical feasibility, estimate effort/cost/timeline, roadmap conflict?</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Decision memo:</b> APPROVE / REJECT / MODIFY with clear rationale within 2h</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>Response ≤2h · Memo sufficient for Board to decide immediately</b></div><div class="out">📤 Output: <b>Decision memo → Board · Jira/Snow task if approved</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">??</div><div class="tm">as needed</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--cio)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cio)"></div>
+        <div class="ct">
+          <div><div class="ctitle">📄 Meeting minutes → Action items</div><div class="cwho">After each meeting · Drop file into inputs/meetings/</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📄</div><div class="rb"><b>Drop file:</b> Paste meeting minutes into inputs/meetings/ after the meeting</div></div><div class="row"><div class="ri">🤖</div><div class="rb"><b>Claude extract:</b> Action items, owners, deadlines → create Jira/Snow tasks</div></div><div class="row"><div class="ri">📧</div><div class="rb"><b>Draft email:</b> Follow-up summary email to send to participants</div></div></div>
+          <div class="out">📤 Output: <b>Jira/Snow tasks created · Follow-up email drafted</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">END OF DAY</div>
+
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">17</div><div class="tm">30</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--cio)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cio)"></div>
+        <div class="ct">
+          <div><div class="ctitle">🌙 /eod — EOD Summary + Auto Archive</div><div class="cwho">Daily 17:30 · Wrap up · Clear inputs/ · Tomorrow's to-do · Archive</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">✅</div><div class="rb"><b>Done today:</b> Aggregate from 5 agents — what was accomplished today</div></div><div class="row"><div class="ri">⏳</div><div class="rb"><b>Carry-over:</b> Unfinished items → move to tomorrow with notes</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Tomorrow top 5:</b> Priority based on Snow queue + Jira + carry-overs</div></div><div class="row"><div class="ri">📦</div><div class="rb"><b>Auto archive:</b> Move [PROCESSED] files to archive/YYYY-MM/ automatically</div></div></div>
+          <div class="out">📤 Output: <b>Teams EOD report · daily_log updated · archive cleaned</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.30s">
+      <div class="tc"><div class="th">Mon</div><div class="tm">7:30</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--cio)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cio)"></div>
+        <div class="ct">
+          <div><div class="ctitle">📊 W2 — Weekly IT Scorecard</div><div class="cwho">Weekly Mon · KPI toàn IT tuần qua vs target · Trend 4 tuần</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📊</div><div class="rb"><b>KPI sweep:</b> Uptime, SLA compliance, sprint velocity, security score, budget burn</div></div><div class="row"><div class="ri">📉</div><div class="rb"><b>Trend:</b> vs monthly target + vs last 4 weeks</div></div><div class="row"><div class="ri">⚠️</div><div class="rb"><b>Red flags:</b> Which team is underperforming? Which risks are accumulating?</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>IT scorecard ≥85% targets · 0 end-of-month surprises</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--cio)">3</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f59e0b">2+</div><div class="dsl">ON-DEMAND</div></div><div class="ds"><div class="dsv" style="color:var(--cio)">2</div><div class="dsl">WEEKLY</div></div></div>
+</div>
+<div class="panel" id="panel-dev">
+  <div class="agent-meta" style="border-color:var(--dev)44;background:var(--dev)0d">
+    <div class="am-dot" style="background:var(--dev)"></div>
+    <div><div class="am-name">Agent IT Dev — Development Lead</div><div class="am-role">Manager · GitHub · Jira · CI/CD · Code quality · Tech debt</div></div>
+    <div class="am-kpis"><div class="kpitag">Sprint ≥80%</div><div class="kpitag">PR ≤24h</div><div class="kpitag">CI ≥95%</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">MORNING</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">09</div><div class="tm">00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--dev)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--dev)"></div>
+        <div class="ct">
+          <div><div class="ctitle">💻 W1 — Daily Dev Standup — GitHub + Jira + Snow</div><div class="cwho">Daily 9:00 AM · Team sync · Unblock · Assign reviewer</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🐙</div><div class="rb"><b>GitHub:</b> 24h commits per dev, PRs waiting review >24h (flagged), CI/CD pass/fail</div></div><div class="row"><div class="ri">🟩</div><div class="rb"><b>Jira Sprint:</b> Burndown vs pace, blocked tasks, developers stuck >4h</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow → Dev:</b> Bug reports (defect category) to fix this sprint</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Action:</b> Assign reviewer to stale PRs, unblock devs, flag delays to PM</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80">Jira API</div><div class="src" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3);color:#c084fc">GitHub API</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow REQ</div></div><div class="kl"><span>KPI:</span> <b>Sprint velocity ≥80% · PR review ≤24h · CI pass ≥95%</b></div><div class="out">📤 Output: <b>Teams #dev-team standup · Jira sprint board updated</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">ON-DEMAND</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">??</div><div class="tm">as needed</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔍 W2 — /quality — Code Quality Gate</div><div class="cwho">Before each release · SonarQube + Security scan + Coverage check</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🔬</div><div class="rb"><b>SonarQube:</b> Code smells, duplications, complexity, maintainability rating</div></div><div class="row"><div class="ri">🔐</div><div class="rb"><b>Security scan:</b> OWASP dependency check, HIGH/CRITICAL CVE severity</div></div><div class="row"><div class="ri">🧪</div><div class="rb"><b>Test coverage:</b> ≥80% overall, flag any module below threshold</div></div><div class="row"><div class="ri">🚫</div><div class="rb"><b>BLOCK release if:</b> Critical bug / coverage <70% / CRITICAL CVE unpatched</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>0 critical bugs to production · Coverage ≥80% · CVE response ≤48h</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">??</div><div class="tm">as needed</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">🚀 W3 — /deploy — Post-Deployment Check</div><div class="cwho">After each deployment · Monitor 2h · Rollback if error rate rises</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🐙</div><div class="rb"><b>GitHub release:</b> Commits included, test pass rate, release notes</div></div><div class="row"><div class="ri">📡</div><div class="rb"><b>Monitoring:</b> Error rate 2h post-deploy vs baseline, P95 response time</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow watch:</b> Any new incidents created post-deploy related to the release?</div></div><div class="row"><div class="ri">⚠️</div><div class="rb"><b>If error:</b> Trigger rollback → create Snow P1 → notify Infra + CIO immediately</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3);color:#c084fc">GitHub API</div><div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div></div><div class="kl"><span>KPI:</span> <b>MTTR hotfix ≤1h · Rollback rate &lt;5%</b></div><div class="out">📤 Output: <b>Snow CHG closed/PIR · Teams deploy report</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">Sprint</div><div class="tm">2 weeks</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">📅 W4 — Sprint Planning AI Assist</div><div class="cwho">Start of each sprint · Estimate + Assign + Sprint goal setting</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🟩</div><div class="rb"><b>Jira backlog:</b> Stories prioritized, story point estimates, dependency check</div></div><div class="row"><div class="ri">👥</div><div class="rb"><b>Capacity:</b> Leave, commitments, 85% capacity (15% buffer for unexpected)</div></div><div class="row"><div class="ri">💡</div><div class="rb"><b>Sprint goal:</b> 1 clear sentence + assign stories by each developer's expertise</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80">Jira API</div></div><div class="kl"><span>KPI:</span> <b>Commitment hit ≥80% · Scope change &lt;20%</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">Monthly</div><div class="tm">1x</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔧 W5 — Tech Debt Assessment</div><div class="cwho">Monthly · Inventory + Prioritize + Allocate 20% sprint capacity</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📊</div><div class="rb"><b>Inventory:</b> SonarQube issues + GitHub 'tech-debt' tagged + retro notes</div></div><div class="row"><div class="ri">⚖️</div><div class="rb"><b>Prioritize:</b> Top 5 items, estimate effort, business risk if not fixed</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Allocate:</b> 20% sprint capacity dedicated to tech debt each sprint</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3);color:#c084fc">GitHub API</div><div class="src" style="background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80">Jira API</div></div><div class="kl"><span>KPI:</span> <b>Tech debt ratio decreasing each quarter · Legacy code &lt;20%</b></div><div class="out">📤 Output: <b>Tech debt report → CIO + PM</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--dev)">1</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f59e0b">2</div><div class="dsl">ON-DEMAND</div></div><div class="ds"><div class="dsv" style="color:var(--dev)">2</div><div class="dsl">DEEP/SPRINT</div></div></div>
+</div>
+<div class="panel" id="panel-pm">
+  <div class="agent-meta" style="border-color:var(--pm)44;background:var(--pm)0d">
+    <div class="am-dot" style="background:var(--pm)"></div>
+    <div><div class="am-name">Agent IT PM — Project Manager</div><div class="am-role">Manager · Jira · Stakeholders · Risk register · Resource · Closure</div></div>
+    <div class="am-kpis"><div class="kpitag">≥80% on-track</div><div class="kpitag">Stakeholder ≥4/5</div><div class="kpitag">Risk current</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">MORNING</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">08</div><div class="tm">30</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--pm)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pm)"></div>
+        <div class="ct">
+          <div><div class="ctitle">📋 W1 — Daily Project Pulse — Jira + Snow REQ</div><div class="cwho">Daily 8:30 AM · Snapshot project · Flag red/amber · Unblock</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🟩</div><div class="rb"><b>Jira:</b> Tasks due today (done?), overdue, blocked issues, sprint burndown pace</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow REQ:</b> New enhancement requests needing triage, requests pending too long</div></div><div class="row"><div class="ri">📅</div><div class="rb"><b>Calendar:</b> Today's milestones, demos, reviews — anything to prepare?</div></div><div class="row"><div class="ri">📢</div><div class="rb"><b>Action:</b> Notify stakeholder if deliverable delayed >1 day, reschedule if needed</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80">Jira API</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow REQ</div></div><div class="kl"><span>KPI:</span> <b>≥80% tasks on-track · 0 milestone miss without advance warning</b></div><div class="out">📤 Output: <b>Jira updated · Teams #it-projects pulse</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">ON-DEMAND / PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">Mon</div><div class="tm">weekly</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">⚠️ W3 — /pm risk — Risk Register Review</div><div class="cwho">Mon hằng tuần · Update risk · Activate contingency nếu cần</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📋</div><div class="rb"><b>Review:</b> Each risk — probability changed? Mitigation action taken?</div></div><div class="row"><div class="ri">🆕</div><div class="rb"><b>New risks:</b> New risks last week? Assign owner immediately</div></div><div class="row"><div class="ri">🚨</div><div class="rb"><b>Escalate:</b> Any risk becoming a real issue → brief CIO immediately</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>Risk register always current · 0 surprise issues</b></div><div class="out">📤 Output: <b>Updated risk_register.xlsx → CIO</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">Fri</div><div class="tm">16:00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--pm)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pm)"></div>
+        <div class="ct">
+          <div><div class="ctitle">📧 W2 — Weekly Stakeholder Update</div><div class="cwho">Fri hằng tuần · Per-department · Done / Next week / Blocked</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📊</div><div class="rb"><b>Per-dept summary:</b> % complete, milestones reached, what's delivered next week</div></div><div class="row"><div class="ri">🚧</div><div class="rb"><b>Blockers:</b> What department support is needed? Dependencies unclear?</div></div><div class="row"><div class="ri">📨</div><div class="rb"><b>Send:</b> Teams/Email per department, no tech jargon</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>100% stakeholders receive update · Satisfaction ≥4/5</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">Monthly</div><div class="tm">start</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">👥 W4 — Resource Capacity Planning</div><div class="cwho">Start of month · 3-month forecast · Identify gaps · Request if needed</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📊</div><div class="rb"><b>Map:</b> Resource vs project demand over 3 months, leave/holiday calendar</div></div><div class="row"><div class="ri">⚠️</div><div class="rb"><b>Flag:</b> Over-allocated (>100%), critical skill gap, contractor needed?</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Plan:</b> Rebalance workload, adjust timeline, request budget if needed</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80">Jira API</div></div><div class="kl"><span>KPI:</span> <b>Utilization 70–85% · 0 delays due to understaffing</b></div><div class="out">📤 Output: <b>Capacity_plan_[month].xlsx → CIO</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">End of</div><div class="tm">project</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">🎉 W5 — Project Closure & Retro</div><div class="cwho">End of mỗi project · Handover · Benefits realization · Lessons learned</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">✅</div><div class="rb"><b>Handover:</b> Deliverables accepted, docs complete, end-user training done</div></div><div class="row"><div class="ri">📊</div><div class="rb"><b>Benefits:</b> Benefit realization vs business case — on target?</div></div><div class="row"><div class="ri">📚</div><div class="rb"><b>Lessons:</b> What worked / didn't → update PMO playbook immediately</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>100% deliverables accepted · Lessons documented within 1 week</b></div><div class="out">📤 Output: <b>Closure report → PMO library · Satisfaction survey</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--pm)">2</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f59e0b">1</div><div class="dsl">WEEKLY</div></div><div class="ds"><div class="dsv" style="color:var(--pm)">2</div><div class="dsl">DEEP/MONTH</div></div></div>
+</div>
+<div class="panel" id="panel-infra">
+  <div class="agent-meta" style="border-color:var(--infra)44;background:var(--infra)0d">
+    <div class="am-dot" style="background:var(--infra)"></div>
+    <div><div class="am-name">Agent IT Infra — Infrastructure Lead</div><div class="am-role">Executive · Server · Network · Backup · DR · CMDB · Monitoring</div></div>
+    <div class="am-kpis"><div class="kpitag">Uptime ≥99.5%</div><div class="kpitag">Backup 100%</div><div class="kpitag">MTTR P1 ≤2h</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">PRE-START</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">07</div><div class="tm">00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--infra)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--infra)"></div>
+        <div class="ct">
+          <div><div class="ctitle">🖥️ W1 — Infrastructure Health Check — Full Stack</div><div class="cwho">Daily 7:00 AM · Check before business hours · Alert immediately if critical</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">💻</div><div class="rb"><b>Servers:</b> CPU/RAM/Disk (flag >80%), uptime, overnight restart events</div></div><div class="row"><div class="ri">🌐</div><div class="rb"><b>Network:</b> WAN link status, latency, firewall alerts, VPN connections</div></div><div class="row"><div class="ri">💾</div><div class="rb"><b>Backup:</b> Overnight jobs success/failed/partial, backup size anomaly</div></div><div class="row"><div class="ri">🗄️</div><div class="rb"><b>Database:</b> Oracle/SQL performance, tablespace usage, replication lag</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow CMDB:</b> CI health alerts, today's maintenance windows, open infra P1/P2</div></div><div class="row"><div class="ri">🚨</div><div class="rb"><b>Immediate action:</b> Alert on-call if critical, trigger manual backup if failed</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CMDB</div></div><div class="kl"><span>KPI:</span> <b>Uptime ≥99.5% · Backup 100% · Network &lt;50ms</b></div><div class="out">📤 Output: <b>Teams #it-infra morning status · Snow INC if issue found</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">ON-DEMAND</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">??</div><div class="tm">P1/P2</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f43f5e"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f43f5e"></div>
+        <div class="ct">
+          <div><div class="ctitle">🚨 W3 — /incident — Incident Response (routed from Snow Agent)</div><div class="cwho">Snow Agent routes infra incidents here · MTTR P1 ≤2h</div></div>
+          <div class="badges"><div class="b bg-od">ON-DEMAND</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow INC:</b> Description, affected CIs (CMDB), recent changes, related incidents</div></div><div class="row"><div class="ri">🔍</div><div class="rb"><b>Investigate:</b> Concurrent monitoring alerts, recent GitHub deploy, change window?</div></div><div class="row"><div class="ri">📚</div><div class="rb"><b>Snow KB:</b> Known error / runbook → apply solution immediately if found</div></div><div class="row"><div class="ri">🔧</div><div class="rb"><b>Fix/Rollback:</b> Apply fix or rollback the recent change causing the incident</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Post-mortem:</b> Mandatory within 24h for P1 · Update KB after resolve to reduce recurrence</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow KB</div><div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div></div><div class="kl"><span>KPI:</span> <b>MTTR P1 ≤2h · P2 ≤4h · Post-mortem 100% of P1s</b></div><div class="out">📤 Output: <b>Snow INC closed · Post-mortem doc · KB updated</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">??</div><div class="tm">monthly</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔄 W4 — /infra patch — Patch Management</div><div class="cwho">1st Saturday monthly · OS, middleware, firmware, database security patches</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📋</div><div class="rb"><b>Inventory:</b> OS/middleware/DB patches, network firmware, CVE-based priority</div></div><div class="row"><div class="ri">⚠️</div><div class="rb"><b>Risk assess:</b> Reboot required? Rollback plan? Known conflicts?</div></div><div class="row"><div class="ri">✅</div><div class="rb"><b>Critical patches:</b> Apply within 72h after testing on staging</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>Critical patches ≤72h · 0 unplanned downtime after patching</b></div><div class="out">📤 Output: <b>Patch report → CIO + Security Agent</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">Fri</div><div class="tm">weekly</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--infra)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--infra)"></div>
+        <div class="ct">
+          <div><div class="ctitle">📈 W2 — Capacity Planning Alert</div><div class="cwho">Fri hằng tuần · Forecast 90 ngày · Ngăn outage trước khi xảy ra</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📊</div><div class="rb"><b>30-day trend:</b> Storage growth rate, CPU/RAM trend, cloud cost</div></div><div class="row"><div class="ri">🔮</div><div class="rb"><b>90-day forecast:</b> When will resources run out? Is procurement lead time enough?</div></div><div class="row"><div class="ri">💰</div><div class="rb"><b>Optimize:</b> Right-size cloud instances, archive old data, request budget if capex needed</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div></div><div class="kl"><span>KPI:</span> <b>0 outages due to capacity · Cloud cost ≤budget ±10%</b></div><div class="out">📤 Output: <b>Capacity_forecast.xlsx → CIO + Finance</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">Quarterly</div><div class="tm">1x</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">🆘 W5 — DR & Business Continuity Test</div><div class="cwho">Quarterly · Measure actual RTO/RPO · Fix gaps · Update runbook</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🎭</div><div class="rb"><b>Scenarios:</b> DC power loss, ransomware restore, database corruption</div></div><div class="row"><div class="ri">⏱️</div><div class="rb"><b>Measure actual:</b> RTO (target ≤4h), RPO (target ≤1h) — not just estimates</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Fix:</b> Update outdated runbook steps, fix technical gaps, train weak team members</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>RTO ≤4h · RPO ≤1h · DR passes 100% of critical systems</b></div><div class="out">📤 Output: <b>DR_test_report.pdf → CIO + Compliance + Audit</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--infra)">2</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f43f5e">1</div><div class="dsl">ON-DEMAND P1</div></div><div class="ds"><div class="dsv" style="color:var(--infra)">2</div><div class="dsl">PERIODIC</div></div></div>
+</div>
+<div class="panel" id="panel-sec">
+  <div class="agent-meta" style="border-color:var(--sec)44;background:var(--sec)0d">
+    <div class="am-dot" style="background:var(--sec)"></div>
+    <div><div class="am-name">Agent IT Security — Cybersecurity Lead</div><div class="am-role">Executive · SIEM · Regulatory Compliance · Pen test · Security awareness</div></div>
+    <div class="am-kpis"><div class="kpitag">Alert ≤15 min</div><div class="kpitag">0 orphaned admin</div><div class="kpitag">Compliance 100%</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">PRE-START</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">07</div><div class="tm">30</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--sec)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sec)"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔐 W1 — Security Morning Watch — Overnight threats</div><div class="cwho">Daily 7:30 AM · SIEM + Snow Security · Response ≤15 minutes</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🔍</div><div class="rb"><b>Access logs:</b> Failed login >5x/account, foreign IP/country, off-hours login</div></div><div class="row"><div class="ri">🦠</div><div class="rb"><b>Threats:</b> Malware detection, IDS/IPS alerts, DLP alerts, WAF attack patterns</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow Security:</b> Unassigned security incidents, access requests past SLA</div></div><div class="row"><div class="ri">🔓</div><div class="rb"><b>New CVEs:</b> CVEs affecting our systems → coordinate patch with Infra within 72h</div></div><div class="row"><div class="ri">🚫</div><div class="rb"><b>Immediate action:</b> Block brute force IPs, lock suspicious accounts, quarantine malware</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3);color:#f43f5e">SIEM</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow SEC</div></div><div class="kl"><span>KPI:</span> <b>0 critical alerts unreviewed · Threat response ≤15 minutes</b></div><div class="out">📤 Output: <b>Teams #it-security morning report · Snow INC if needed</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">ON-DEMAND</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">??</div><div class="tm">sec alert</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f43f5e"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f43f5e"></div>
+        <div class="ct">
+          <div><div class="ctitle">🚨 W4 — /sec incident — Security Incident Response</div><div class="cwho">Snow webhook / SIEM alert · Contain ≤1h · Regulatory report ≤72h if breach</div></div>
+          <div class="badges"><div class="b bg-od">ON-DEMAND</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🔒</div><div class="rb"><b>Contain:</b> Isolate affected systems, preserve evidence, block attack vector</div></div><div class="row"><div class="ri">🔬</div><div class="rb"><b>Forensics:</b> Root cause, attack timeline, impact scope (users/data)</div></div><div class="row"><div class="ri">⚖️</div><div class="rb"><b>Regulatory:</b> Data breach? → Report to authorities ≤72h (Data Protection Law)</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Report:</b> CIO + Legal immediately · CEO if customer data involved</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>Containment ≤1h · Regulatory report ≤72h if breach · 0 repeat incident</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">??</div><div class="tm">monthly</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">🎣 W3 — /sec awareness — Phishing Simulation</div><div class="cwho">Monthly · Measure click rate · Targeted training for weak departments</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📧</div><div class="rb"><b>Simulation:</b> Realistic phishing email, targeting all employees</div></div><div class="row"><div class="ri">📊</div><div class="rb"><b>Track:</b> Click rate, credential submission, report rate per department</div></div><div class="row"><div class="ri">🎓</div><div class="rb"><b>Training:</b> Targeted for high click-rate departments, 1-on-1 for repeat offenders</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>Phishing click rate &lt;5% · 100% employees trained/year</b></div><div class="out">📤 Output: <b>Awareness_report.pdf → CIO + HR</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">Fri</div><div class="tm">17:00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--sec)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sec)"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔑 W2 — Access Control Weekly Review</div><div class="cwho">Fri hằng tuần · Ex-employees · Privileged accounts · Dormant</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">👤</div><div class="rb"><b>Ex-employees:</b> Staff who left this week → account disabled? (target ≤24h)</div></div><div class="row"><div class="ri">🔐</div><div class="rb"><b>Privileged:</b> Admin accounts have owners? Any over-privileged users?</div></div><div class="row"><div class="ri">💤</div><div class="rb"><b>Dormant:</b> No login >90 days → disable after confirmation</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow Access REQ:</b> This week's create/revoke requests fully processed?</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow REQ</div></div><div class="kl"><span>KPI:</span> <b>Ex-employee disabled ≤24h · 0 orphaned admin accounts</b></div><div class="out">📤 Output: <b>Access review report → CIO + HR</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">Monthly</div><div class="tm">1x</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">⚖️ W5 — Compliance Check — Insurance Regulations + IAIS</div><div class="cwho">Monthly · Audit readiness · Gap identification · Remediation</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">📜</div><div class="rb"><b>Insurance Circular:</b> 5-year audit logs, documented access control, encryption, DR tested</div></div><div class="row"><div class="ri">🛡️</div><div class="rb"><b>Data Protection:</b> Data inventory, consent records, retention policy, DPA with partners</div></div><div class="row"><div class="ri">🌐</div><div class="rb"><b>IAIS ICP9:</b> Cyber risk in ERM framework, supervisory reporting ready</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Gap remediation:</b> Fix with specific deadlines, brief Legal on findings</div></div></div>
+          <div class="kl"><span>KPI:</span> <b>0 compliance findings >30 days · Audit ready 100%</b></div><div class="out">📤 Output: <b>Compliance_report.pdf → CIO + Legal</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--sec)">2</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f43f5e">1</div><div class="dsl">ON-DEMAND</div></div><div class="ds"><div class="dsv" style="color:var(--sec)">2</div><div class="dsl">PERIODIC</div></div></div>
+</div>
+<div class="panel" id="panel-snow">
+  <div class="agent-meta" style="border-color:var(--snow)44;background:var(--snow)0d">
+    <div class="am-dot" style="background:var(--snow)"></div>
+    <div><div class="am-name">Agent Snow / ITSM — ServiceNow Lead</div><div class="am-role">Executive · INC · REQ · CHG · PRB · SLA · CMDB · KB — 1 queue, 1 owner</div></div>
+    <div class="am-kpis"><div class="kpitag">0 unassigned >1h</div><div class="kpitag">SLA breach &lt;5%</div><div class="kpitag">MTTR P1 ≤2h</div></div>
+  </div>
+  <div class="tl"><div class="tl-line"></div>
+    <div class="sec">PRE-START</div>
+
+    <div class="blk" style="animation-delay:.05s">
+      <div class="tc"><div class="th">07</div><div class="tm">30</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--snow)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--snow)"></div>
+        <div class="ct">
+          <div><div class="ctitle">❄️ W1 — Daily Snow Queue Triage — All 6 modules</div><div class="cwho">Daily 7:30 AM · Classify + Assign + Prioritize · 0 tickets slip through</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🚨</div><div class="rb"><b>INC:</b> Open incidents → check priority, category, assignment. Unassigned → assign immediately: Infra/Security/Dev/PM</div></div><div class="row"><div class="ri">📝</div><div class="rb"><b>REQ:</b> New service requests → classify dev/infra/access/procurement → assign correct team</div></div><div class="row"><div class="ri">🔄</div><div class="rb"><b>CHG:</b> Pending CAB today → flag for CIO approval before implementation window</div></div><div class="row"><div class="ri">🔍</div><div class="rb"><b>PRB:</b> Problems open >7 days without root cause → push owner for update</div></div><div class="row"><div class="ri">⏰</div><div class="rb"><b>SLA forecast:</b> Tickets about to breach within 2h → escalate immediately</div></div><div class="row"><div class="ri">🗺️</div><div class="rb"><b>CMDB:</b> CI health alerts during triage, relationship impact assessment</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow REQ</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CHG</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow PRB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow SLA</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CMDB</div></div><div class="kl"><span>KPI:</span> <b>0 unassigned >1h · SLA forecast accurate ≥90%</b></div><div class="out">📤 Output: <b>Snow queue fully triaged · Teams #it-itsm morning report</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">MID-DAY</div>
+
+    <div class="blk" style="animation-delay:.10s">
+      <div class="tc"><div class="th">14</div><div class="tm">00</div></div>
+      <div class="nc"><div class="nd" style="border-color:var(--snow)"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--snow)"></div>
+        <div class="ct">
+          <div><div class="ctitle">⏰ W2 — SLA Breach Prevention — Mid-day Sweep</div><div class="cwho">Daily 2:00 PM · Warning 2h before breach · Auto-escalate + Redistribute</div></div>
+          <div class="badges"><div class="b bg-auto">T1 AUTO</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">⏱️</div><div class="rb"><b>SLA remaining:</b> Calculate remaining time per ticket, identify those breaching within 4h</div></div><div class="row"><div class="ri">⚖️</div><div class="rb"><b>Workload balance:</b> Any agent handling >5 tickets? Redistribute if overloaded</div></div><div class="row"><div class="ri">🔴</div><div class="rb"><b>P1 active >1h:</b> No workaround yet → escalate to CIO immediately</div></div><div class="row"><div class="ri">👻</div><div class="rb"><b>Forgotten tickets:</b> No update >3h → ping owner, bump priority</div></div><div class="row"><div class="ri">❄️</div><div class="rb"><b>Auto-update Snow:</b> Set SLA warning flags, reassign, write work notes</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow SLA</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div></div><div class="kl"><span>KPI:</span> <b>SLA breach rate &lt;5% · 0 forgotten tickets >3h</b></div><div class="out">📤 Output: <b>Snow SLA flags updated · Teams alert if breach is critical</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">ON-DEMAND</div>
+
+    <div class="blk" style="animation-delay:.15s">
+      <div class="tc"><div class="th">??</div><div class="tm">webhook</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f43f5e"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f43f5e"></div>
+        <div class="ct">
+          <div><div class="ctitle">🚨 W3 — P1/P2 Incident Auto-Response</div><div class="cwho">Snow webhook → Claude Code auto-triggered · Response ≤15 minutes · Route + Mobilize</div></div>
+          <div class="badges"><div class="b bg-wh">WEBHOOK</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">⚡</div><div class="rb"><b>Trigger:</b> Snow P1/P2 created → Claude Code activated within &lt;2 minutes</div></div><div class="row"><div class="ri">📖</div><div class="rb"><b>Read Snow:</b> INC description, affected CIs (CMDB), related incidents, recent CHG 24h</div></div><div class="row"><div class="ri">📚</div><div class="rb"><b>Snow KB:</b> Known error / runbook → reference solution immediately if found</div></div><div class="row"><div class="ri">🐙</div><div class="rb"><b>GitHub:</b> Any recent deployment matching the incident timeline?</div></div><div class="row"><div class="ri">📡</div><div class="rb"><b>Monitoring:</b> Which alerts triggered simultaneously? How many users impacted?</div></div><div class="row"><div class="ri">📝</div><div class="rb"><b>Auto-update Snow:</b> Work notes + probable cause + recommended fix + reassign to correct team</div></div><div class="row"><div class="ri">📢</div><div class="rb"><b>Notify:</b> Teams #incident-bridge · CIO email &lt;15 min · SMS if P1 &gt;30 min</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CMDB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow KB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CHG</div><div class="src" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3);color:#c084fc">GitHub API</div><div class="src" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">Monitoring</div></div><div class="kl"><span>KPI:</span> <b>Response ≤15 min · MTTR P1 ≤2h · MTTR P2 ≤4h</b></div><div class="out">📤 Output: <b>Snow work notes updated · Teams #incident-bridge · incident_report.md</b></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="blk" style="animation-delay:.20s">
+      <div class="tc"><div class="th">??</div><div class="tm">/snow cab</div></div>
+      <div class="nc"><div class="nd" style="border-color:#f59e0b"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b"></div>
+        <div class="ct">
+          <div><div class="ctitle">🔄 W4 — CAB Change Review — AI Recommendation</div><div class="cwho">/snow cab [CHG#] · Comprehensive analysis → write CAB notes → CIO approves</div></div>
+          <div class="badges"><div class="b bg-tele">T2 TELE</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">❄️</div><div class="rb"><b>Snow CHG:</b> Scope, risk level, rollback plan, implementation window, implementer</div></div><div class="row"><div class="ri">🗺️</div><div class="rb"><b>CMDB impact:</b> Affected CIs — does this touch Core Insurance System?</div></div><div class="row"><div class="ri">📜</div><div class="rb"><b>INC history:</b> Recent incidents on this CI? Recurring error patterns?</div></div><div class="row"><div class="ri">🔄</div><div class="rb"><b>CHG conflict:</b> Another change in same window? Sprint deploy conflict?</div></div><div class="row"><div class="ri">🐙</div><div class="rb"><b>GitHub:</b> Code passed review &amp; CI green? Test coverage OK?</div></div><div class="row"><div class="ri">📋</div><div class="rb"><b>Recommendation:</b> APPROVE / REJECT / DEFER + risk score (1-5) → written into Snow CHG CAB notes</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CHG</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CMDB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div><div class="src" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.3);color:#c084fc">GitHub API</div></div><div class="kl"><span>KPI:</span> <b>CHG review within 2h · CHG success rate ≥95% · 0 emergency rollbacks</b></div><div class="out">📤 Output: <b>Snow CHG CAB notes updated · Decision memo → CIO · Implementer notified</b></div>
+        </div>
+      </div></div>
+    </div>    <div class="sec">PERIODIC</div>
+
+    <div class="blk" style="animation-delay:.25s">
+      <div class="tc"><div class="th">Monthly</div><div class="tm">start</div></div>
+      <div class="nc"><div class="nd" style="border-color:#60a5fa"></div></div>
+      <div class="cc"><div class="card" onclick="tog(this)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#60a5fa"></div>
+        <div class="ct">
+          <div><div class="ctitle">📊 W5 — Monthly ITSM Performance Report</div><div class="cwho">Start of month · Full Snow KPIs last month · ≥3 insights → CIO → Board</div></div>
+          <div class="badges"><div class="b bg-deep">T3 DEEP</div></div>
+        </div>
+        <div class="det">
+          <div class="rows"><div class="row"><div class="ri">🚨</div><div class="rb"><b>Incidents:</b> Total, by priority, by category, MTTR trend vs last month</div></div><div class="row"><div class="ri">⏱️</div><div class="rb"><b>SLA:</b> Overall compliance rate + per-agent, breach causes, worst offender</div></div><div class="row"><div class="ri">📝</div><div class="rb"><b>Requests:</b> Volume, completion rate, avg fulfillment time</div></div><div class="row"><div class="ri">🔄</div><div class="rb"><b>Changes:</b> Success rate, rollback count, emergency vs planned</div></div><div class="row"><div class="ri">🔍</div><div class="rb"><b>Problems:</b> Open count, avg time to root cause, recurring incidents reduced?</div></div><div class="row"><div class="ri">📚</div><div class="rb"><b>KB health:</b> Articles created/updated, usage rate — reducing repeat incidents?</div></div><div class="row"><div class="ri">🗺️</div><div class="rb"><b>CMDB accuracy:</b> Stale CIs, orphaned records, accuracy score %</div></div><div class="row"><div class="ri">💡</div><div class="rb"><b>Insights:</b> Top 3 improvements + Top 3 issues to fix next month</div></div></div>
+          <div class="srcs"><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow INC</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow REQ</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CHG</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow PRB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow KB</div><div class="src" style="background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.4);color:#6ee7b7">Snow CMDB</div></div><div class="kl"><span>KPI:</span> <b>Report đúng hạn start tháng · ≥3 actionable insights · Dashboard updated</b></div><div class="out">📤 Output: <b>ITSM_report_[month].pdf → CIO · Dashboard updated · Teams summary</b></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="day-sum"><div class="ds"><div class="dsv" style="color:var(--snow)">2</div><div class="dsl">DAILY AUTO</div></div><div class="ds"><div class="dsv" style="color:#f43f5e">1</div><div class="dsl">WEBHOOK P1</div></div><div class="ds"><div class="dsv" style="color:var(--snow)">2</div><div class="dsl">ON-DEMAND</div></div></div>
+</div>
+
+<script>
+function sw(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+  document.querySelectorAll('#panel-'+id+' .blk').forEach((b,i)=>{
+    b.style.opacity=0;b.style.animation='none';
+    setTimeout(()=>{b.style.animationDelay=(0.04+i*.07)+'s';b.style.animation='fi .3s forwards';},10);
+  });
+}
+function tog(c){c.classList.toggle('open')}
+document.querySelectorAll('.blk').forEach((b,i)=>{b.style.animationDelay=(0.04+i*.06)+'s'})
+</script>
+</body></html>

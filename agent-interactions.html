@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Interactions Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+:root{
+  --bg:#0f1a28;--bg2:#172438;--bg3:#1e2f48;
+  --border:rgba(255,255,255,0.1);
+  --text:#e8f0fa;--muted:#7a96b4;--faint:#3d5a7a;
+  --cio:#60a5fa;--dev:#a78bfa;--pm:#34d399;
+  --infra:#fb923c;--sec:#f43f5e;--snow:#6ee7b7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
+.page{max-width:1100px;margin:0 auto;padding:36px 24px 80px}
+
+/* HEADER */
+.hdr{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.eye{font-size:9px;letter-spacing:5px;color:var(--snow);margin-bottom:8px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,28px);font-weight:800;color:#fff;letter-spacing:-.5px}
+h1 span{color:var(--snow)}
+.hsub{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* MATRIX */
+.matrix-wrap{margin-bottom:40px}
+.sec-label{font-size:9px;letter-spacing:4px;color:var(--faint);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.matrix{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:10px}
+thead th{padding:10px 8px;text-align:center;font-size:9px;letter-spacing:1px;
+  color:var(--muted);border-bottom:1px solid var(--border)}
+thead th:first-child{text-align:left;padding-left:0;width:100px}
+tbody td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:middle}
+tbody td:first-child{text-align:left;padding-left:0;font-size:10px;font-weight:600;
+  white-space:nowrap}
+.cell{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;min-height:36px;padding:4px;border-radius:5px}
+.cell-arrow{font-size:14px;line-height:1}
+.cell-label{font-size:8px;letter-spacing:.3px;color:var(--muted);line-height:1.3;text-align:center}
+.cell-none{color:rgba(255,255,255,0.08);font-size:16px}
+.cell.self{background:rgba(255,255,255,0.03)}
+
+/* AGENT HEADER CELL */
+.ag-head{display:flex;align-items:center;gap:7px}
+.ag-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* INTERACTION CARDS */
+.interactions{display:flex;flex-direction:column;gap:12px}
+.ix-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  cursor:pointer;transition:border-color .2s}
+.ix-card:hover{border-color:rgba(255,255,255,0.2)}
+.ix-card.open{border-color:rgba(255,255,255,0.2)}
+
+.ix-header{display:flex;align-items:center;gap:12px;padding:13px 16px}
+.ix-from{display:flex;align-items:center;gap:6px;font-family:'Syne',sans-serif;
+  font-size:12px;font-weight:700}
+.ix-arrow-big{font-size:16px;color:var(--faint);flex-shrink:0}
+.ix-to{display:flex;align-items:center;gap:6px;font-family:'Syne',sans-serif;
+  font-size:12px;font-weight:700}
+.ix-meta{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
+.ix-badge{font-size:8px;letter-spacing:.5px;padding:2px 8px;border-radius:3px;
+  border:1px solid;font-weight:600;white-space:nowrap}
+.auto-b{color:#22c55e;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1)}
+.tele-b{color:#f59e0b;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.1)}
+.event-b{color:#f43f5e;border-color:rgba(244,63,94,.4);background:rgba(244,63,94,.1)}
+
+.ix-body{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.ix-card.open .ix-body{display:block}
+
+.ix-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  color:#fff;margin-bottom:10px}
+.ix-rows{display:flex;flex-direction:column;gap:6px}
+.ix-row{display:grid;grid-template-columns:100px 1fr 1fr;gap:10px;
+  padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);font-size:11px;align-items:start}
+.ix-when{color:var(--snow);font-size:9px;letter-spacing:.5px;line-height:1.5}
+.ix-what{color:var(--text);line-height:1.5}
+.ix-why{color:var(--muted);font-size:10px;line-height:1.5;font-style:italic}
+
+/* TIMELINE */
+.tl-wrap{margin-top:40px}
+.tl{display:flex;flex-direction:column;gap:3px}
+.tl-row{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:start}
+.tl-time{font-size:11px;color:#fff;font-weight:600;padding-top:10px;text-align:right}
+.tl-events{display:flex;flex-direction:column;gap:4px;padding:8px 0}
+.tl-event{display:flex;align-items:flex-start;gap:8px;padding:7px 12px;
+  border-radius:6px;border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.02);font-size:10px}
+.tl-from-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.tl-ev-text{color:var(--text);line-height:1.5}
+.tl-ev-text b{font-weight:500}
+.tl-ev-who{color:var(--muted);font-size:9px;margin-top:2px}
+.tl-sep{height:1px;background:var(--border);margin:6px 0 6px 82px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <div class="eye">IT CIO WORKSPACE — AGENT INTERACTION MAP</div>
+  <h1>Agents <span>tương tác</span> với nhau thế nào</h1>
+  <div class="hsub">6 agents · Ai gửi gì cho ai · Khi nào · Tại sao · Click để xem chi tiết</div>
+</div>
+
+<!-- MATRIX -->
+<div class="matrix-wrap">
+  <div class="sec-label">MA TRẬN TƯƠNG TÁC — FROM (hàng) → TO (cột)</div>
+  <div class="matrix">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--cio);margin:0 auto"></div>CIO</div></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--snow);margin:0 auto"></div>SNOW</div></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--infra);margin:0 auto"></div>INFRA</div></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--sec);margin:0 auto"></div>SEC</div></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--dev);margin:0 auto"></div>DEV</div></th>
+        <th><div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--pm);margin:0 auto"></div>PM</div></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- CIO -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--cio)"></div>CIO</div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--cio)">→</div>
+          <div class="cell-label">CAB Approve<br>Escalate SLA</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--cio)">→</div>
+          <div class="cell-label">DR Decision<br>Budget OK</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--cio)">→</div>
+          <div class="cell-label">Compliance<br>Direction</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--cio)">→</div>
+          <div class="cell-label">Tech decision<br>Sprint approve</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--cio)">→</div>
+          <div class="cell-label">Resource OK<br>Priority shift</div>
+        </div></td>
+      </tr>
+      <!-- SNOW -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--snow)"></div>SNOW</div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--snow)">→</div>
+          <div class="cell-label">P1 Alert<br>SLA breach<br>CHG recommend</div>
+        </div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--snow)">→</div>
+          <div class="cell-label">Infra INC<br>Patch REQ</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--snow)">→</div>
+          <div class="cell-label">Sec INC<br>Access REQ</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--snow)">→</div>
+          <div class="cell-label">Bug reports<br>Enhancement</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--snow)">→</div>
+          <div class="cell-label">Enhancement<br>REQ triage</div>
+        </div></td>
+      </tr>
+      <!-- INFRA -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--infra)"></div>INFRA</div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--infra)">→</div>
+          <div class="cell-label">P1 escalate<br>Capacity alert<br>DR results</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--infra)">→</div>
+          <div class="cell-label">INC update<br>Patch CHG</div>
+        </div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--infra)">→</div>
+          <div class="cell-label">Patch done<br>New CVE alert</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--infra)">→</div>
+          <div class="cell-label">Deploy env<br>ready</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--infra)">→</div>
+          <div class="cell-label">Infra capacity<br>for projects</div>
+        </div></td>
+      </tr>
+      <!-- SEC -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--sec)"></div>SEC</div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--sec)">→</div>
+          <div class="cell-label">Breach alert<br>Compliance<br>report</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--sec)">→</div>
+          <div class="cell-label">Sec INC update<br>Access review</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--sec)">→</div>
+          <div class="cell-label">CVE → patch<br>Infra lockdown</div>
+        </div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--sec)">→</div>
+          <div class="cell-label">Code sec alert<br>CVE in deps</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--sec)">→</div>
+          <div class="cell-label">Staff access<br>revoked</div>
+        </div></td>
+      </tr>
+      <!-- DEV -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--dev)"></div>DEV</div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--dev)">→</div>
+          <div class="cell-label">Sprint delay<br>Tech debt ask<br>Release done</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--dev)">→</div>
+          <div class="cell-label">Deploy CHG<br>Bug closed</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--dev)">→</div>
+          <div class="cell-label">Deploy request<br>Env issue</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--dev)">→</div>
+          <div class="cell-label">Code review<br>for sec issues</div>
+        </div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--dev)">→</div>
+          <div class="cell-label">Sprint done<br>Delay warning</div>
+        </div></td>
+      </tr>
+      <!-- PM -->
+      <tr>
+        <td><div class="ag-head"><div class="ag-dot" style="background:var(--pm)"></div>PM</div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--pm)">→</div>
+          <div class="cell-label">Risk escalate<br>Resource ask<br>Milestone miss</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--pm)">→</div>
+          <div class="cell-label">REQ triage<br>result</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--pm)">→</div>
+          <div class="cell-label">Infra needs<br>for project</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--pm)">→</div>
+          <div class="cell-label">Staff change<br>notify</div>
+        </div></td>
+        <td><div class="cell">
+          <div class="cell-arrow" style="color:var(--pm)">→</div>
+          <div class="cell-label">Sprint plan<br>Scope change</div>
+        </div></td>
+        <td><div class="cell self"><span class="cell-none">—</span></div></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- INTERACTION DETAILS -->
+<div class="sec-label">CHI TIẾT TƯƠNG TÁC — Click để xem</div>
+<div class="interactions">
+
+  <!-- SNOW → ALL -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--snow)"></div>SNOW</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">Infra · Security · Dev · PM · CIO</div>
+      <div class="ix-meta">
+        <div class="ix-badge auto-b">AUTO 7:30</div>
+        <div class="ix-badge event-b">WEBHOOK P1</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">❄️ Snow Agent là "dispatcher" trung tâm — phân loại và route toàn bộ Snow queue</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⏰ 07:30 Daily<br>(Auto)</div>
+          <div class="ix-what"><b>→ Infra:</b> Route incidents category=Infrastructure. Notify về maintenance windows, CI health alerts từ CMDB</div>
+          <div class="ix-why">Infra không cần tự scan Snow — Snow Agent đã lọc và push đúng việc</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ 07:30 Daily<br>(Auto)</div>
+          <div class="ix-what"><b>→ Security:</b> Route incidents category=Security. Push access requests cần review. Flag unassigned sec tickets</div>
+          <div class="ix-why">Security tập trung điều tra, không mất thời gian scan queue</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ 07:30 Daily<br>(Auto)</div>
+          <div class="ix-what"><b>→ Dev:</b> Route bug reports (defect category). Push enhancement requests liên quan code</div>
+          <div class="ix-why">Dev biết chính xác bug nào cần fix trong sprint</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ 07:30 Daily<br>(Auto)</div>
+          <div class="ix-what"><b>→ PM:</b> Route enhancement REQs từ phòng ban cần triage. Flag requests pending quá lâu</div>
+          <div class="ix-why">PM biết ngay có yêu cầu mới nào cần assess và estimate</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi P1/P2<br>tạo mới</div>
+          <div class="ix-what"><b>→ CIO:</b> Alert P1 trong 15 phút. SLA breach warning. CHG cần CAB approval hôm nay</div>
+          <div class="ix-why">CIO không bị surprise, luôn biết critical issues trước khi chúng leo thang</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ 14:00 Daily<br>(Auto)</div>
+          <div class="ix-what"><b>→ Tất cả:</b> SLA breach warning — ticket của agent nào sắp breach → ping đúng agent đó</div>
+          <div class="ix-why">Cảnh báo 2h trước khi breach để có đủ thời gian xử lý</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CIO → ALL (morning aggregate) -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--cio)"></div>CIO</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">Snow · Infra · Security · Dev · PM</div>
+      <div class="ix-meta">
+        <div class="ix-badge tele-b">TELE DECISION</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">🔵 CIO ra quyết định cuối → agents thực thi</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⚡ Sau Snow<br>CAB review</div>
+          <div class="ix-what"><b>→ Snow:</b> APPROVE / REJECT / DEFER CHG với reasoning. Snow Agent update Snow record và notify implementer</div>
+          <div class="ix-why">CIO là người duy nhất có quyền approve production changes</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi P1 >30'<br>chưa resolve</div>
+          <div class="ix-what"><b>→ Infra / Snow:</b> Activate DR plan nếu cần. Authorize emergency resources. Escalate to vendors</div>
+          <div class="ix-why">P1 kéo dài cần CIO authorization để bypass normal processes</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi nhận<br>Board request</div>
+          <div class="ix-what"><b>→ PM:</b> Approved request → PM tạo project charter, allocate resources. Rejected → PM notify requester</div>
+          <div class="ix-why">PM cần CIO decision trước khi commit team capacity</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Monthly<br>Board Report</div>
+          <div class="ix-what"><b>→ Dev:</b> Tech debt sprint approved? Architecture decision? Library upgrade OK? CIO sign-off</div>
+          <div class="ix-why">Major technical decisions cần CIO alignment với business strategy</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Quarterly</div>
+          <div class="ix-what"><b>→ Infra:</b> Capacity investment approved. Cloud budget OK. DR test schedule confirmed</div>
+          <div class="ix-why">Capex decisions cần CIO approval trước khi Infra act</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFRA → OTHERS -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--infra)"></div>INFRA</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">CIO · Snow · Security · Dev · PM</div>
+      <div class="ix-meta">
+        <div class="ix-badge event-b">EVENT-DRIVEN</div>
+        <div class="ix-badge auto-b">AUTO 07:00</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">🟠 Infra Agent là nền tảng — tất cả agents phụ thuộc vào hạ tầng stable</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⏰ 07:00<br>Health Check</div>
+          <div class="ix-what"><b>→ CIO:</b> Morning infrastructure report: uptime đêm qua, backup status, server health summary</div>
+          <div class="ix-why">CIO cần infrastructure baseline trước khi đọc daily briefing 8:00</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi P1<br>infrastructure</div>
+          <div class="ix-what"><b>→ Snow:</b> Tạo / update Snow INC với work notes, probable cause, fix actions. Close sau resolve + PIR</div>
+          <div class="ix-why">Snow là system of record — mọi incident phải được documented</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi patch<br>xong hoặc CVE</div>
+          <div class="ix-what"><b>→ Security:</b> "Server X đã patch CVE-YYYY-NNNN." Security verify và close vulnerability tracking</div>
+          <div class="ix-why">Security cần confirm patch thực sự applied, không chỉ nói sẽ patch</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Trước mỗi<br>deploy</div>
+          <div class="ix-what"><b>→ Dev:</b> "Staging env ready" / "Production maintenance window: 22:00-23:00 thứ 6" / "Rollback env confirmed"</div>
+          <div class="ix-why">Dev không thể deploy nếu không có Infra confirmation về environment readiness</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ Weekly<br>Friday</div>
+          <div class="ix-what"><b>→ PM:</b> Capacity forecast: "Infra có thể support thêm 2 dự án Q2 với current resources. Q3 cần thêm server"</div>
+          <div class="ix-why">PM cần infra capacity data để lên kế hoạch project pipeline</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY → OTHERS -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--sec)"></div>SECURITY</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">CIO · Infra · Dev · PM · Snow</div>
+      <div class="ix-meta">
+        <div class="ix-badge event-b">ALERT-DRIVEN</div>
+        <div class="ix-badge auto-b">AUTO 07:30</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">🔴 Security Agent cross-cuts tất cả — bảo mật là concern của toàn hệ thống</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi phát<br>hiện breach</div>
+          <div class="ix-what"><b>→ CIO:</b> Immediate notification: "Data breach suspected. Customer PII potentially exposed. Regulatory report needed within 72h"</div>
+          <div class="ix-why">CIO phải activate crisis protocol và notify Board, Legal ngay lập tức</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi CVE<br>critical mới</div>
+          <div class="ix-what"><b>→ Infra:</b> "CVE-YYYY-NNNN affects Oracle 19c on prod-db-01. CVSS 9.8. Patch required within 72h. Staging env first"</div>
+          <div class="ix-why">Infra cần CVE details để prioritize và execute patch với đúng urgency</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi phát<br>hiện trong code</div>
+          <div class="ix-what"><b>→ Dev:</b> "Dependency log4j-2.14 has CRITICAL CVE. Block release until updated. Here's remediation guide"</div>
+          <div class="ix-why">Dev cần security alerts để block unsafe releases và fix vulnerable code</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ Thứ 6<br>17:00 Weekly</div>
+          <div class="ix-what"><b>→ PM:</b> "Nhân viên A nghỉ việc Thứ 4. Account đã disabled. Tất cả project access revoked. PM update stakeholder list"</div>
+          <div class="ix-why">PM cần biết team member changes để update project contacts và access</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi sec<br>incident xảy ra</div>
+          <div class="ix-what"><b>→ Snow:</b> Update Snow Security INC: work notes, forensics findings, containment actions, closure sau eradicate</div>
+          <div class="ix-why">Security incidents phải có full audit trail trong Snow cho compliance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEV → OTHERS -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--dev)"></div>DEV</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">CIO · Snow · Infra · Security · PM</div>
+      <div class="ix-meta">
+        <div class="ix-badge auto-b">AUTO 09:00</div>
+        <div class="ix-badge tele-b">POST-EVENT</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">🟣 Dev Agent báo cáo delivery và phối hợp deployment với Infra/Security</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi sprint<br>at risk</div>
+          <div class="ix-what"><b>→ CIO + PM:</b> "Sprint 12 delay risk: dependency on vendor API delayed 1 tuần. Need decision: descope feature X or extend sprint?"</div>
+          <div class="ix-why">CIO và PM cần cùng quyết định scope vs timeline tradeoff</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Sau mỗi<br>deployment</div>
+          <div class="ix-what"><b>→ Snow:</b> Update Snow CHG: implementation done, post-deployment check results, close CHG với PIR notes</div>
+          <div class="ix-why">CHG phải closed properly — audit trail cho mọi production change</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Trước<br>deployment</div>
+          <div class="ix-what"><b>→ Infra:</b> "Release v2.3.1 ready to deploy. Requires DB migration. Estimated 45 min downtime. Need maintenance window confirmation"</div>
+          <div class="ix-why">Infra phải prepare environment, schedule maintenance, có rollback ready</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi code<br>có sec issue</div>
+          <div class="ix-what"><b>→ Security:</b> "Found hardcoded credential in PR #234. Blocked merge. Need security review before proceeding"</div>
+          <div class="ix-why">Security cần review và confirm fix trước khi vulnerable code được merge</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ End of<br>sprint</div>
+          <div class="ix-what"><b>→ PM:</b> Sprint velocity report: "Completed 42/50 story points. 2 stories carry-over. Bug fix took 30% more than estimated"</div>
+          <div class="ix-why">PM cần accurate velocity data để update project timeline và stakeholder forecast</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PM → OTHERS -->
+  <div class="ix-card" onclick="tog(this)">
+    <div class="ix-header">
+      <div class="ix-from"><div style="width:10px;height:10px;border-radius:50%;background:var(--pm)"></div>PM</div>
+      <div class="ix-arrow-big">→</div>
+      <div class="ix-to" style="color:#94a3b8">CIO · Dev · Infra · Security · Snow</div>
+      <div class="ix-meta">
+        <div class="ix-badge auto-b">AUTO Thứ 2</div>
+        <div class="ix-badge tele-b">COORDINATION</div>
+      </div>
+    </div>
+    <div class="ix-body">
+      <div class="ix-title">🟢 PM Agent là coordinator — đảm bảo tất cả agents aligned với project goals</div>
+      <div class="ix-rows">
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi risk<br>escalate</div>
+          <div class="ix-what"><b>→ CIO:</b> "Project X risk: vendor delay sẽ cause 3-week slip. Options: (A) extend timeline, (B) hire contractor, (C) descope. Need decision by EOD"</div>
+          <div class="ix-why">CIO cần context đầy đủ để quyết định, PM prepare options analysis</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⏰ Đầu sprint<br>(bi-weekly)</div>
+          <div class="ix-what"><b>→ Dev:</b> Sprint planning input: "Business priority này tuần: Feature A > Bug B > Enhancement C. Stakeholder demo Thứ 6"</div>
+          <div class="ix-why">Dev cần business priority context để order sprint backlog đúng</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi project<br>cần infra</div>
+          <div class="ix-what"><b>→ Infra:</b> "Project Y cần thêm 2TB storage và 1 server từ Q2. Budget approved. Lead time: cần trước 15/4"</div>
+          <div class="ix-why">Infra cần advance notice để order hardware đúng lead time</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Khi staff<br>thay đổi</div>
+          <div class="ix-what"><b>→ Security:</b> "Nhân viên B chuyển từ IT sang Finance từ Thứ 2. Cần revoke IT system access, grant Finance access"</div>
+          <div class="ix-why">Security cần thay đổi access kịp thời khi role thay đổi</div>
+        </div>
+        <div class="ix-row">
+          <div class="ix-when">⚡ Sau triage<br>enhancement</div>
+          <div class="ix-what"><b>→ Snow:</b> "Enhancement REQ-12345 assessed: 3-week effort, approved for Q3 sprint. Update Snow REQ status và notify requester"</div>
+          <div class="ix-why">Snow REQ phải được updated với timeline để requester biết khi nào sẽ được delivery</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DAILY TIMELINE OF INTERACTIONS -->
+<div class="tl-wrap">
+  <div class="sec-label" style="margin-top:40px;margin-bottom:16px">TIMELINE TƯƠNG TÁC TRONG NGÀY</div>
+  <div class="tl">
+
+    <div class="tl-row">
+      <div class="tl-time">06:55</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:#94a3b8"></div>
+          <div><div class="tl-ev-text"><b>Auto-ingest</b> → tất cả agents: kéo data từ Snow, Jira, GitHub, O365, Monitoring vào inputs/</div>
+          <div class="tl-ev-who">Không phải agent interaction — hệ thống chuẩn bị data cho mọi người</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">07:00</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--infra)"></div>
+          <div><div class="tl-ev-text"><b>Infra</b> → <span style="color:var(--cio)">CIO</span>: Infrastructure health report — uptime, backup, server status</div>
+          <div class="tl-ev-who">Infra W1 chạy xong → gửi summary lên CIO để include vào Daily Briefing 8:00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">07:30</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--infra)">Infra</span>: Infra incidents P1/P2 để handle · maintenance windows hôm nay</div>
+          <div class="tl-ev-who">Snow W1 Daily Triage — route infra tickets</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--sec)">Security</span>: Security incidents unassigned · access requests quá SLA</div>
+          <div class="tl-ev-who">Snow W1 Daily Triage — route security tickets</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--dev)">Dev</span>: Bug reports (defect) cần fix sprint này</div>
+          <div class="tl-ev-who">Snow W1 Daily Triage — route dev tickets</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--pm)">PM</span>: Enhancement requests mới cần triage · requests pending quá lâu</div>
+          <div class="tl-ev-who">Snow W1 Daily Triage — route PM tickets</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--cio)">CIO</span>: CHG pending CAB approval hôm nay · SLA breach risk · P1/P2 queue summary</div>
+          <div class="tl-ev-who">Snow W1 — CIO morning intel trước briefing</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--sec)"></div>
+          <div><div class="tl-ev-text"><b>Security</b> → <span style="color:var(--cio)">CIO</span>: Security morning watch results — threats đêm qua, alerts, CVEs mới</div>
+          <div class="tl-ev-who">Security W1 — Security intel cho CIO briefing</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">08:00</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--cio)"></div>
+          <div><div class="tl-ev-text"><b>CIO</b> — Daily IT Briefing: aggregate từ Infra (7:00), Snow (7:30), Security (7:30) → tạo CIO action list</div>
+          <div class="tl-ev-who">CIO W1 — orchestrate, không tương tác real-time với agents, đọc reports đã gửi</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">08:30</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--pm)"></div>
+          <div><div class="tl-ev-text"><b>PM</b> → <span style="color:var(--cio)">CIO</span>: Daily project pulse — milestones hôm nay, overdue tasks, risks cần attention</div>
+          <div class="tl-ev-who">PM W1 chạy xong → input cho CIO Daily Briefing (nếu CIO chưa xong)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">09:00</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--dev)"></div>
+          <div><div class="tl-ev-text"><b>Dev</b> → <span style="color:var(--pm)">PM</span>: Dev standup results — sprint velocity, blocked items, sprint risk warning</div>
+          <div class="tl-ev-who">Dev W1 — PM cần biết dev health để update project status</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--dev)"></div>
+          <div><div class="tl-ev-text"><b>Dev</b> → <span style="color:var(--cio)">CIO</span>: CI/CD status, release pipeline, any quality gate blocks</div>
+          <div class="tl-ev-who">Dev W1 — CIO daily briefing supplement</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">?? khi có</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow P1 webhook</b> → <span style="color:var(--infra)">Infra</span> hoặc <span style="color:var(--sec)">Security</span>: "P1 incident mới — immediate response required"</div>
+          <div class="tl-ev-who">Snow W3 — real-time, không chờ 7:30 schedule</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--infra)"></div>
+          <div><div class="tl-ev-text"><b>Infra / Security</b> → <span style="color:var(--cio)">CIO</span>: P1 escalation nếu &gt;30 phút chưa resolve hoặc impact lớn</div>
+          <div class="tl-ev-who">CIO cần authorize extraordinary measures: emergency vendor, DR, etc.</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--dev)"></div>
+          <div><div class="tl-ev-text"><b>Dev</b> → <span style="color:var(--infra)">Infra</span>: "Ready to deploy v2.3. Need prod maintenance window confirmed"</div>
+          <div class="tl-ev-who">Dev không deploy mà không có Infra confirmation</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--sec)"></div>
+          <div><div class="tl-ev-text"><b>Security</b> → <span style="color:var(--dev)">Dev</span>: "Critical CVE in dependency. Block release until patched"</div>
+          <div class="tl-ev-who">Security overrides Dev release — security trumps delivery speed</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">14:00</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--snow)"></div>
+          <div><div class="tl-ev-text"><b>Snow</b> → <span style="color:var(--infra)">Infra</span> · <span style="color:var(--sec)">Sec</span> · <span style="color:var(--dev)">Dev</span> · <span style="color:var(--pm)">PM</span>: SLA breach warning — "Ticket INC-XXXXX của bạn sẽ breach trong 2h"</div>
+          <div class="tl-ev-who">Snow W2 SLA sweep — targeted warning đến đúng agent owns ticket đó</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">16:00 Thứ 6</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--pm)"></div>
+          <div><div class="tl-ev-text"><b>PM</b> → Stakeholders + <span style="color:var(--cio)">CIO</span>: Weekly update — done, next week, blockers cần support</div>
+          <div class="tl-ev-who">PM W2 — CIO biết project health tổng thể cuối tuần</div></div>
+        </div>
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--sec)"></div>
+          <div><div class="tl-ev-text"><b>Security</b> → <span style="color:var(--cio)">CIO</span> + HR: Access review — ex-employees disabled, orphaned accounts found</div>
+          <div class="tl-ev-who">Security W2 — weekly access hygiene report</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-sep"></div>
+    <div class="tl-row">
+      <div class="tl-time">17:30</div>
+      <div class="tl-events">
+        <div class="tl-event">
+          <div class="tl-from-dot" style="background:var(--cio)"></div>
+          <div><div class="tl-ev-text"><b>CIO EOD</b>: Tổng kết từ tất cả agents → EOD report → Teams #it-leadership → auto-archive inputs/</div>
+          <div class="tl-ev-who">CIO W5 — final aggregation và cleanup, ngày mai's priority list cho mọi agent</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+<script>
+function tog(card){ card.classList.toggle('open') }
+</script>
+</body>
+</html>
